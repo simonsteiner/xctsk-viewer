@@ -114,6 +114,22 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Task Actions</h5>
+                    {% if task_data and task_data.qr_code %}
+                    <!-- QR Code Data Incorrect! -->
+                    <!-- <hr class="my-3">
+                    <div class="text-center">
+                        <h6 class="mb-2">
+                            <i class="fas fa-qrcode"></i> Task QR Code
+                        </h6>
+                        <img src="data:image/png;base64,{{ task_data.qr_code }}" 
+                             class="img-fluid mb-2" 
+                             style="max-width: 300px;" 
+                             alt="Task QR Code">
+                        <div class="small text-muted">
+                            Scan with XCTSK compatible app
+                        </div>
+                    </div> -->
+                    {% endif %}
                     {% if is_upload %}
                     <p class="card-text">Uploaded file: <strong>{{ task_code }}</strong></p>
                     <div class="d-grid gap-2">

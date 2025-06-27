@@ -9,6 +9,9 @@ from typing import Dict, Optional, Tuple, Any
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+import qrcode
+import base64
+from io import BytesIO
 
 # Import pyxctsk functions
 from app.lib.pyxctsk import parse_task, calculate_task_distances, generate_task_geojson
@@ -159,14 +162,14 @@ class XCTSKService:
                     table_class = ""
 
                     # Debug: print turnpoint info
-                    print(f"Debug - Turnpoint {i}: {tp_detail.get('name', 'Unknown')}")
-                    if tp:
-                        print(f"  tp.type: {tp.type}")
-                        print(
-                            f"  tp.waypoint.name: {tp.waypoint.name if tp.waypoint else 'No waypoint'}"
-                        )
-                    else:
-                        print(f"  tp object is None")
+                    # print(f"Debug - Turnpoint {i}: {tp_detail.get('name', 'Unknown')}")
+                    # if tp:
+                    #     print(f"  tp.type: {tp.type}")
+                    #     print(
+                    #         f"  tp.waypoint.name: {tp.waypoint.name if tp.waypoint else 'No waypoint'}"
+                    #     )
+                    # else:
+                    #     print(f"  tp object is None")
 
                     # First check if turnpoint has explicit type information
                     if tp and tp.type:
@@ -212,23 +215,28 @@ class XCTSKService:
                     }
 
                     # Print turnpoint details to console
-                    print(f"\nTurnpoint {turnpoint_info['index']}:")
-                    print(f"  Name: {turnpoint_info['name']}")
-                    print(f"  Type: {turnpoint_info['type']}")
-                    print(f"  Description: {turnpoint_info['description']}")
-                    print(f"  Radius: {turnpoint_info['radius']} m")
-                    print(
-                        f"  Cumulative distance (center): {turnpoint_info['cumulative_distance_center']:.2f} km"
-                    )
-                    print(
-                        f"  Cumulative distance (optimized): {turnpoint_info['cumulative_distance_optimized']:.2f} km"
-                    )
-                    if tp and hasattr(tp, "waypoint") and tp.waypoint:
-                        print(
-                            f"  Coordinates: {tp.waypoint.lat:.6f}, {tp.waypoint.lon:.6f}"
-                        )
+                    # print(f"\nTurnpoint {turnpoint_info['index']}:")
+                    # print(f"  Name: {turnpoint_info['name']}")
+                    # print(f"  Type: {turnpoint_info['type']}")
+                    # print(f"  Description: {turnpoint_info['description']}")
+                    # print(f"  Radius: {turnpoint_info['radius']} m")
+                    # print(
+                    #     f"  Cumulative distance (center): {turnpoint_info['cumulative_distance_center']:.2f} km"
+                    # )
+                    # print(
+                    #     f"  Cumulative distance (optimized): {turnpoint_info['cumulative_distance_optimized']:.2f} km"
+                    # )
+                    # if tp and hasattr(tp, "waypoint") and tp.waypoint:
+                    #     print(
+                    #         f"  Coordinates: {tp.waypoint.lat:.6f}, {tp.waypoint.lon:.6f}"
+                    #     )
 
                     task_info["turnpoints"].append(turnpoint_info)
+
+            # Generate QR code for the task
+            qr_code_data = self.generate_qr_code(task)
+            if qr_code_data:
+                task_info["qr_code"] = qr_code_data
 
             return True, "Task processed successfully", task_info
 
@@ -257,3 +265,42 @@ class XCTSKService:
             task_data
         )
         return process_success, process_message, processed_data, status_code
+
+    def generate_qr_code(self, task) -> Optional[str]:
+        """
+        Generate a QR code for the task in XCTSK format.
+
+        Args:
+            task: The task object to generate QR code for
+
+        Returns:
+            Base64 encoded PNG image data or None if generation fails
+        """
+        try:
+            # Convert task to QR code format
+            qr_task = task.to_qr_code_task()
+            qr_string = qr_task.to_string()
+
+            # Generate QR code
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
+                box_size=8,
+                border=2,
+            )
+            qr.add_data(qr_string)
+            qr.make(fit=True)
+
+            # Create QR code image
+            qr_image = qr.make_image(fill_color="black", back_color="white")
+
+            # Convert to base64 string
+            buffer = BytesIO()
+            qr_image.save(buffer, format="PNG")
+            img_str = base64.b64encode(buffer.getvalue()).decode()
+
+            return img_str
+
+        except Exception as e:
+            print(f"Error generating QR code: {e}")
+            return None
