@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+
+{% block title %}{% if task_code %}Task {{ task_code }} - XCTSK Viewer{% else %}XCTSK Viewer{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Task Code Entry Form -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body py-3">
+                    <!-- Tab navigation -->
+                    <ul class="nav nav-pills nav-fill mb-3" id="loadTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="code-tab" data-bs-toggle="pill" data-bs-target="#code-pane" type="button" role="tab">
+                                <i class="fas fa-code"></i> Enter Task Code
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="upload-tab" data-bs-toggle="pill" data-bs-target="#upload-pane" type="button" role="tab">
+                                <i class="fas fa-upload"></i> Upload XCTSK File
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab content -->
+                    <div class="tab-content" id="loadTabsContent">
+                        <!-- Task Code Tab -->
+                        <div class="tab-pane fade show active" id="code-pane" role="tabpanel">
+                            <div class="text-center">
+                                <form method="get" action="/xctsk/view" id="loadform"
+                                    class="d-inline-flex align-items-center gap-2">
+                                    <input name="taskCode" class="form-control form-control-sm" style="width: 12em;"
+                                        placeholder="Task code" value="{{ task_code if task_code and not is_upload else '' }}">
+                                    <button class="btn btn-primary btn-sm">Load task</button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Tab -->
+                        <div class="tab-pane fade" id="upload-pane" role="tabpanel">
+                            <form method="post" action="/xctsk/upload" enctype="multipart/form-data" class="text-center">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <input type="file" name="xctsk_file" accept=".xctsk" class="form-control form-control-sm" style="width: 16em;" required>
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="fas fa-upload"></i> Upload
+                                    </button>
+                                </div>
+                                <div class="form-text mt-1">
+                                    Select a .xctsk file from your computer
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'danger' else 'info' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if task_data %}
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <h3>XCTrack competition task information</h3>
+            <dl class="row">
+                <dt class="col-3">Task code:</dt>
+                <dd class="col-9">{{ task_code }}</dd>
+                {% if task_data.task.name %}
+                <dt class="col-3">Task name:</dt>
+                <dd class="col-9">{{ task_data.task.name }}</dd>
+                {% endif %}
+                {% if task_data.task.task_type %}
+                <dt class="col-3">Task type:</dt>
+                <dd class="col-9">{{ task_data.metadata.task_type }}</dd>
+                {% endif %}
+                {% if task_data.metadata.sss_time %}
+                <dt class="col-3">SSS Open:</dt>
+                <dd class="col-9">{{ task_data.metadata.sss_time }} (UTC)</dd>
+                {% endif %}
+                {% if task_data.metadata.goal_type %}
+                <dt class="col-3">Goal type:</dt>
+                <dd class="col-9">{{ task_data.metadata.goal_type }}</dd>
+                {% endif %}
+                {% if task_data.metadata.goal_deadline %}
+                <dt class="col-3">Goal deadline:</dt>
+                <dd class="col-9">{{ task_data.metadata.goal_deadline }} (UTC)</dd>
+                {% endif %}
+                <dt class="col-3">Earth model:</dt>
+                <dd class="col-9">{{ task_data.metadata.earth_model }}</dd>
+                {% if task_data.metadata.task_distance_center %}
+                <dt class="col-3">Task distance:</dt>
+                <dd class="col-9">{{ "%.1f"|format(task_data.metadata.task_distance_center / 1000) }}km (through
+                    centers)</dd>
+                {% endif %}
+                {% if task_data.metadata.task_distance_optimized %}
+                <dt class="col-3"></dt>
+                <dd class="col-9">{{ "%.1f"|format(task_data.metadata.task_distance_optimized / 1000) }}km (optimized)
+                </dd>
+                {% endif %}
+            </dl>
+        </div>
+        <div class="col-12 col-lg-4 text-center">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Task Actions</h5>
+                    {% if is_upload %}
+                    <p class="card-text">Uploaded file: <strong>{{ task_code }}</strong></p>
+                    <div class="d-grid gap-2">
+                        <span class="text-muted">
+                            <i class="fas fa-info-circle"></i> This task was uploaded from a local file
+                        </span>
+                    </div>
+                    {% else %}
+                    <p class="card-text">Task code: <strong>{{ task_code }}</strong></p>
+                    <div class="d-grid gap-2">
+                        <a class="btn btn-primary" href="https://tools.xcontest.org/api/xctsk/load/{{ task_code }}"
+                            download="task_{{ task_code }}.xctsk" role="button">
+                            <i class="fas fa-download"></i> Download .xtsk<br>(from tools.xcontest.org)
+                        </a>
+                        <a class="btn btn-outline-secondary"
+                            href="https://tools.xcontest.org/xctsk/load?taskCode={{ task_code }}" target="_blank"
+                            role="button">
+                            <i class="fas fa-external-link-alt"></i> View on tools.xcontest.org
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if task_data.turnpoints %}
+    <h4 class="mt-4">Turnpoints</h4>
+    <div class="table-responsive">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Radius (m)</th>
+                    <th>Distance (km)</th>
+                    <th>Optimized (km)</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tp in task_data.turnpoints %}
+                <tr{% if tp.table_class %} class="{{ tp.table_class }}" {% endif %}{% if tp.type=='SSS' %}
+                    title="Start of speed section" {% elif tp.type=='ESS' %} title="End of speed section" {% endif %}>
+                    <th scope="row">{{ tp.index }}</th>
+                    <td>{{ tp.name }}</td>
+                    <td>{{ tp.description }}</td>
+                    <td>{{ tp.radius }}</td>
+                    <td>{{ "%.1f"|format(tp.cumulative_distance_center) }}</td>
+                    <td>{{ "%.1f"|format(tp.cumulative_distance_optimized) }}</td>
+                    <td>{{ tp.type }}</td>
+                    </tr>
+                    {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <hr>
+    {% if not is_upload %}
+    <div class="alert alert-info" role="alert">
+        Task data is fetched from <a href="https://tools.xcontest.org/xctsk/" target="_blank">tools.xcontest.org</a>.
+        Distances may slightly differ from XCTrack.
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Map container -->
+    <div id="map" style="height:600px; border-radius: 8px; border: 1px solid #dee2e6;" class="mt-4"></div>
+    {% elif task_code %}
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">Task not found!</h4>
+        <p>{% if error_message %}{{ error_message|replace('"' + task_code + '"', '"<strong>' + task_code +
+                '</strong>"')|safe }}{% else %}The task "{{ task_code }}" could not be found.{% endif %}</p>
+        <hr>
+        <p class="mb-0">
+            <a href="{{ url_for('main.show_task_view') }}" class="btn btn-outline-danger">
+                <i class="fas fa-search"></i> Try another task
+            </a>
+        </p>
+    </div>
+    {% else %}
+    <!-- No task code entered - show instructions -->
+    <div class="alert alert-info" role="alert">
+        <h4 class="alert-heading">
+            <i class="fas fa-info-circle"></i> Load a Task
+        </h4>
+        <p>Load and visualize a XCTSK task using either method above.</p>
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Method 1 - Task Code:</h6>
+                <ol class="mb-3">
+                    <li>Enter a task code in the first tab</li>
+                    <li>Click "Load task" to fetch from XContest</li>
+                    <li>View the interactive map and task details</li>
+                </ol>
+            </div>
+            <div class="col-md-6">
+                <h6>Method 2 - File Upload:</h6>
+                <ol class="mb-3">
+                    <li>Switch to the "Upload XCTSK File" tab</li>
+                    <li>Select a .xctsk file from your computer</li>
+                    <li>Click "Upload" to process the file</li>
+                </ol>
+            </div>
+        </div>
+
+        <hr>
+        <p>
+            You can create task codes on
+            <a href="https://tools.xcontest.org/xctsk/" target="_blank">tools.xcontest.org</a>.
+            Tasks loaded via code are fetched from there using the provided task code.<br>
+            The displayed data is based on the XCTSK file content — please be aware that optimized distance calculations
+            may slightly differ from those shown in XCTrack.
+        </p>
+
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if task_data and task_data.geojson %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<!-- Custom map styling -->
+<style>
+    #map {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .leaflet-popup-content-wrapper {
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .leaflet-popup-content h6 {
+        margin-bottom: 8px;
+        color: #007bff;
+    }
+
+    .leaflet-popup-content p {
+        margin-bottom: 4px;
+        font-size: 0.9rem;
+    }
+
+    .leaflet-popup-content small {
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    /* Custom cursor for interactive elements */
+    .leaflet-interactive {
+        cursor: pointer !important;
+    }
+
+    /* Improve map controls */
+    .leaflet-control-zoom a {
+        background-color: rgba(255, 255, 255, 0.9);
+        border: 1px solid #ccc;
+    }
+
+    .leaflet-control-zoom a:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Leaflet PolylineDecorator for arrows -->
+<script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+
+<script>
+    function initMap() {
+        // Initialize the map
+        var map = L.map('map').setView([46.0, 8.0], 10);
+
+        // Add Stadia Maps terrain layer
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+        }).addTo(map);
+
+        var geojson = {{ task_data.geojson | tojson
+    }};
+    var bounds = L.latLngBounds();
+
+    // Debug: Log GeoJSON data to console
+    console.log('GeoJSON data:', geojson);
+    if (geojson && geojson.features) {
+        console.log('Number of features:', geojson.features.length);
+        geojson.features.forEach(function (feature, index) {
+            console.log('Feature ' + index + ':', feature.properties.type, feature.properties.name || 'unnamed', feature.geometry.type);
+        });
+    }
+
+    // Calculate bounds from GeoJSON features
+    if (geojson && geojson.features) {
+        geojson.features.forEach(function (feature) {
+            if (feature.geometry && feature.geometry.type === 'Polygon' && feature.geometry.coordinates) {
+                feature.geometry.coordinates[0].forEach(function (coord) {
+                    bounds.extend([coord[1], coord[0]]);
+                });
+            } else if (feature.geometry && feature.geometry.type === 'LineString' && feature.geometry.coordinates) {
+                feature.geometry.coordinates.forEach(function (coord) {
+                    bounds.extend([coord[1], coord[0]]);
+                });
+            } else if (feature.geometry && feature.geometry.type === 'Point' && feature.geometry.coordinates) {
+                bounds.extend([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
+            }
+        });
+    }
+
+    // Style function for features - use colors from GeoJSON properties
+    function featureStyle(feature) {
+        if (!feature.properties) return {};
+
+        var props = feature.properties;
+
+        // If colors are defined in properties, use them directly
+        if (props.color) {
+            return {
+                color: props.color,
+                weight: props.weight || 2,
+                opacity: props.opacity || 0.7,
+                fillColor: props.fillColor || props.color,
+                fillOpacity: props.fillOpacity || 0.1
+            };
+        }
+    }
+
+    // Simplified feature interaction without hover effects
+    function onEachFeature(feature, layer) {
+        var props = feature.properties;
+        var name = props.name;
+        var description = props.description;
+        var radius = props.radius;
+        var type = props.type;
+        var ctype = props.ctype;
+
+        // Add arrows to optimized route
+        if (type === 'optimized_route' && props.arrowheads) {
+            // Create arrow decorators
+            var arrowDecorator = L.polylineDecorator(layer, {
+                patterns: [{
+                    offset: '10%',
+                    repeat: props.arrow_spacing ? (props.arrow_spacing + 'm') : '50000m',
+                    symbol: L.Symbol.arrowHead({
+                        pixelSize: props.arrow_size || 8,
+                        headAngle: 60,
+                        pathOptions: {
+                            fillOpacity: 1,
+                            weight: 0,
+                            color: props.arrow_color || props.color || '#ff4136'
+                        }
+                    })
+                }]
+            });
+            arrowDecorator.addTo(map);
+        }
+
+        // Create comprehensive popup content
+        var popupContent = '<div>';
+        if (name) {
+            popupContent += '<h6><strong>' + name + '</strong></h6>';
+        } else if (type) {
+            popupContent += '<h6>' + type.charAt(0).toUpperCase() + type.slice(1) + '</h6>';
+        }
+
+        if (description) {
+            popupContent += '<p>' + description + '</p>';
+        }
+
+        if (ctype) {
+            popupContent += '<p><em>Type: ' + ctype + '</em></p>';
+        } else if (type && type !== 'cylinder') {
+            popupContent += '<p><em>Type: ' + type + '</em></p>';
+        }
+
+        if (radius) {
+            popupContent += '<small>Radius: ' + radius + 'm</small>';
+        }
+
+        popupContent += '</div>';
+
+        if (name || description || type) {
+            layer.bindPopup(popupContent);
+        }
+    }
+
+    // Function to handle point features (create circles for cylinder turnpoints)
+    function pointToLayer(feature, latlng) {
+        if (feature.properties && feature.properties.type === 'cylinder' && feature.properties.radius) {
+            return L.circle(latlng, {
+                radius: feature.properties.radius
+            });
+        }
+        return L.marker(latlng);
+    }
+
+    // Add GeoJSON data to map
+    if (geojson) {
+        L.geoJSON(geojson, {
+            style: featureStyle,
+            onEachFeature: onEachFeature,
+            pointToLayer: pointToLayer
+        }).addTo(map);
+    }
+
+    // Fit bounds or set default view
+    if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [20, 20] });
+    } else {
+        console.warn('No valid bounds found, using default view');
+    }
+    }
+
+    // Initialize map when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initMap();
+        
+        // Show upload tab if this is an upload operation
+        {% if show_upload or is_upload %}
+        var uploadTab = new bootstrap.Tab(document.getElementById('upload-tab'));
+        uploadTab.show();
+        {% endif %}
+    });
+</script>
+{% else %}
+<script>
+    // No map data available
+    console.log('No GeoJSON data available for map rendering');
+</script>
+{% endif %}
+{% endblock %}

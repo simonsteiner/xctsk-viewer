@@ -20,6 +20,8 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install --upgrade pip
 # Install the package in development mode
 pip install -e .
+# lock dependency versions for deployment
+pip freeze > requirements.txt
 ```
 
 ### Running the Application

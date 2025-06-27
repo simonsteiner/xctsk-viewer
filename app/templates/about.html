@@ -89,7 +89,7 @@
                 <div class="card-body">
                     <h3 class="card-title">Getting Started</h3>
                     <ol>
-                        <li class="mb-2">Navigate to the <a href="{{ url_for('main.viewer') }}">Viewer</a> page</li>
+                        <li class="mb-2">Navigate to the <a href="{{ url_for('main.show_task_view') }}">Viewer</a> page</li>
                         <li class="mb-2">Upload your XCTSK file using drag-and-drop or the file browser</li>
                         <li class="mb-2">View the interactive visualization of your task</li>
                         <li class="mb-2">Analyze waypoints, distances, and flight patterns</li>
@@ -98,7 +98,7 @@
             </div>
             
             <div class="text-center">
-                <a href="{{ url_for('main.viewer') }}" class="btn btn-primary btn-lg">
+                <a href="{{ url_for('main.show_task_view') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-rocket"></i> Start Using XCTSK Viewer
                 </a>
             </div>
