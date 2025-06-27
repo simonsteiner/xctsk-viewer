@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}XCTSK Viewer{% endblock %}</title>
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="{% block og_title %}XCTSK Viewer{% endblock %}">
+    <meta property="og:description" content="A Python-based interactive visualization tool for viewing XCTSK files. XCTSK is a file format for paragliding competition tasks for XCTrack.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:site_name" content="XCTSK Viewer">
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{% block twitter_title %}XCTSK Viewer{% endblock %}">
+    <meta name="twitter:description" content="A Python-based interactive visualization tool for viewing XCTSK files. XCTSK is a file format for paragliding competition tasks for XCTrack.">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
