@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}About - XCTSK Viewer{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="mb-4">
+                <i class="fas fa-info-circle text-primary"></i> About XCTSK Viewer
+            </h1>
+            
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">What is XCTSK Viewer?</h3>
+                    <p class="card-text">
+                        XCTSK Viewer is a Python-based interactive visualization tool designed specifically for viewing 
+                        and analyzing XCTSK (Cross Country Task) files. These files are commonly used in paragliding 
+                        to define flight tasks, waypoints, and competition routes.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Features</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success"></i> 
+                                    Interactive file upload
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success"></i> 
+                                    Real-time task visualization
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success"></i> 
+                                    Waypoint analysis
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success"></i> 
+                                    Distance calculations
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success"></i> 
+                                    Modern web interface
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success"></i> 
+                                    Mobile-friendly design
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Technology Stack</h3>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Backend</h5>
+                            <ul>
+                                <li>Python 3.8+</li>
+                                <li>Flask web framework</li>
+                                <li>XML parsing capabilities</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Frontend</h5>
+                            <ul>
+                                <li>Bootstrap 5</li>
+                                <li>JavaScript ES6+</li>
+                                <li>Font Awesome icons</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">Getting Started</h3>
+                    <ol>
+                        <li class="mb-2">Navigate to the <a href="{{ url_for('main.viewer') }}">Viewer</a> page</li>
+                        <li class="mb-2">Upload your XCTSK file using drag-and-drop or the file browser</li>
+                        <li class="mb-2">View the interactive visualization of your task</li>
+                        <li class="mb-2">Analyze waypoints, distances, and flight patterns</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="{{ url_for('main.viewer') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket"></i> Start Using XCTSK Viewer
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

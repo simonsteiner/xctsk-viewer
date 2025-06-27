@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section bg-gradient text-white">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">XCTSK Viewer</h1>
+                <p class="lead mb-4">
+                    Interactive visualization tool for viewing XCTSK (Cross Country Task) files. 
+                    Perfect for paragliding enthusiasts and pilots who want to analyze and visualize their flight tasks.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('main.viewer') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-eye"></i> Open Viewer
+                    </a>
+                    <a href="{{ url_for('main.about') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-info-circle"></i> Learn More
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="fas fa-route display-1 opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-import fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Easy Import</h5>
+                    <p class="card-text">Simply upload your XCTSK files and start visualizing your paragliding tasks immediately.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-map fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Interactive Maps</h5>
+                    <p class="card-text">Visualize your flight paths and waypoints on interactive maps with detailed information.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Detailed Analysis</h5>
+                    <p class="card-text">Get comprehensive analysis of your tasks including distances, altitudes, and flight patterns.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

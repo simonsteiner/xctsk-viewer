@@ -1,0 +1,146 @@
+/* Custom styles for XCTSK Viewer */
+
+:root {
+    --primary-color: #0d6efd;
+    --success-color: #198754;
+    --info-color: #0dcaf0;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --dark-color: #212529;
+}
+
+/* Hero section styling */
+.hero-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+}
+
+.min-vh-50 {
+    min-height: 50vh;
+}
+
+/* Card enhancements */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* Upload area styling */
+.upload-area {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background-color: #f8f9fa;
+}
+
+.upload-area:hover {
+    background-color: #e9ecef;
+    border-color: var(--primary-color) !important;
+}
+
+.upload-area.border-success {
+    border-color: var(--success-color) !important;
+    background-color: #d1eddf;
+}
+
+/* Navigation enhancements */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.navbar-brand i {
+    margin-right: 0.5rem;
+}
+
+/* Button enhancements */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.btn-lg {
+    padding: 0.75rem 2rem;
+}
+
+/* Footer styling */
+footer {
+    margin-top: auto;
+}
+
+/* Icon enhancements */
+.fa-3x {
+    font-size: 3rem !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 50vh;
+        text-align: center;
+    }
+    
+    .display-4 {
+        font-size: 2.5rem;
+    }
+    
+    .lead {
+        font-size: 1.1rem;
+    }
+}
+
+/* Loading animation */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Map container */
+#mapContainer {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+/* File info styling */
+#fileInfo {
+    border-left: 4px solid var(--info-color);
+}
+
+/* Task details table */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+/* Alert enhancements */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+/* Background gradient utilities */
+.bg-gradient {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%) !important;
+}
