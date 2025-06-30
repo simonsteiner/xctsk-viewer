@@ -2,10 +2,7 @@
 Service for handling XCTSK file operations including download and processing.
 """
 
-import json
-import tempfile
-from pathlib import Path
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Optional, Tuple, Any, List
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -46,8 +43,8 @@ class XCTSKService:
 
         Args:
             task_code: The task code to download
-            version: API version (1 or 2)            Returns:
-                Tuple of (success, message, task_data_string, status_code)
+            version: API version (1 or 2)
+            Returns: Tuple of (success, message, task_data_string, status_code)
         """
         endpoint = (
             f"/api/xctsk/load/{task_code}"
@@ -102,136 +99,20 @@ class XCTSKService:
             # Parse the task
             task = parse_task(task_data)
 
-            # Calculate distances
+            # Calculate distances - this returns all the turnpoint details we need
             distances = calculate_task_distances(task)
 
             # Generate GeoJSON
             geojson = generate_task_geojson(task)
 
-            # Extract task metadata
+            # Build task info using data from pyxctsk calculations
             task_info = {
                 "task": task,
                 "distances": distances,
                 "geojson": geojson,
-                "turnpoints": [],
-                "metadata": {
-                    "task_distance_center": (
-                        distances.get("center_distance_km", 0) * 1000
-                        if distances
-                        else 0  # Convert back to meters
-                    ),
-                    "task_distance_optimized": (
-                        distances.get("optimized_distance_km", 0) * 1000
-                        if distances
-                        else 0  # Convert back to meters
-                    ),
-                    "earth_model": (
-                        task.earth_model.value if task.earth_model else "Unknown"
-                    ),
-                    "task_type": task.task_type.value if task.task_type else "Unknown",
-                    "sss_time": (
-                        task.sss.time_gates[0].to_json_string()
-                        if task.sss and task.sss.time_gates
-                        else None
-                    ),
-                    "goal_deadline": (
-                        task.goal.deadline.to_json_string()
-                        if task.goal and task.goal.deadline
-                        else None
-                    ),
-                    "goal_type": (
-                        task.goal.type.value
-                        if task.goal and task.goal.type
-                        else "Unknown"
-                    ),
-                },
+                "turnpoints": self._format_turnpoints_for_display(task, distances),
+                "metadata": self._extract_task_metadata(task, distances),
             }
-
-            # Process turnpoints for display
-            if task.turnpoints and distances and distances.get("turnpoints"):
-                print(f"\n=== TURNPOINT INFORMATION ===")
-                print(f"Total turnpoints: {len(distances['turnpoints'])}")
-
-                # Use the turnpoint details from distances calculation
-                for i, tp_detail in enumerate(distances["turnpoints"]):
-                    # Get the corresponding task turnpoint
-                    tp = task.turnpoints[i] if i < len(task.turnpoints) else None
-
-                    # Determine turnpoint type
-                    tp_type = ""
-                    table_class = ""
-
-                    # Debug: print turnpoint info
-                    # print(f"Debug - Turnpoint {i}: {tp_detail.get('name', 'Unknown')}")
-                    # if tp:
-                    #     print(f"  tp.type: {tp.type}")
-                    #     print(
-                    #         f"  tp.waypoint.name: {tp.waypoint.name if tp.waypoint else 'No waypoint'}"
-                    #     )
-                    # else:
-                    #     print(f"  tp object is None")
-
-                    # First check if turnpoint has explicit type information
-                    if tp and tp.type:
-                        tp_type_value = (
-                            tp.type.value if hasattr(tp.type, "value") else str(tp.type)
-                        )
-                        if tp_type_value == "TAKEOFF":
-                            tp_type = "Takeoff"
-                        elif tp_type_value == "SSS":
-                            tp_type = "SSS"
-                            table_class = "table-primary"
-                        elif tp_type_value == "ESS":
-                            tp_type = "ESS"
-                            table_class = "table-primary"
-                        else:
-                            tp_type = tp_type_value
-
-                    # If no explicit type, try to determine by position and task structure
-                    if not tp_type:
-                        if i == 0:
-                            tp_type = "Takeoff"
-                        elif i == len(distances["turnpoints"]) - 1:
-                            tp_type = "Goal"
-                            table_class = "table-danger"
-                        else:
-                            tp_type = f"Turnpoint"  # Generic turnpoint
-
-                    turnpoint_info = {
-                        "index": i + 1,
-                        "name": tp_detail.get("name", ""),
-                        "description": (
-                            tp.waypoint.description if tp and tp.waypoint else ""
-                        ),
-                        "radius": tp_detail.get("radius", 0),
-                        "cumulative_distance_center": tp_detail.get(
-                            "cumulative_center_km", 0
-                        ),
-                        "cumulative_distance_optimized": tp_detail.get(
-                            "cumulative_optimized_km", 0
-                        ),
-                        "type": tp_type,
-                        "table_class": table_class,
-                    }
-
-                    # Print turnpoint details to console
-                    # print(f"\nTurnpoint {turnpoint_info['index']}:")
-                    # print(f"  Name: {turnpoint_info['name']}")
-                    # print(f"  Type: {turnpoint_info['type']}")
-                    # print(f"  Description: {turnpoint_info['description']}")
-                    # print(f"  Radius: {turnpoint_info['radius']} m")
-                    # print(
-                    #     f"  Cumulative distance (center): {turnpoint_info['cumulative_distance_center']:.2f} km"
-                    # )
-                    # print(
-                    #     f"  Cumulative distance (optimized): {turnpoint_info['cumulative_distance_optimized']:.2f} km"
-                    # )
-                    # if tp and hasattr(tp, "waypoint") and tp.waypoint:
-                    #     print(
-                    #         f"  Coordinates: {tp.waypoint.lat:.6f}, {tp.waypoint.lon:.6f}"
-                    #     )
-
-                    task_info["turnpoints"].append(turnpoint_info)
 
             # Generate QR code for the task
             qr_code_data = self.generate_qr_code(task)
@@ -242,6 +123,95 @@ class XCTSKService:
 
         except Exception as e:
             return False, f"Error processing task data: {str(e)}", None
+
+    def _extract_task_metadata(self, task, distances: Dict) -> Dict[str, Any]:
+        """Extract task metadata from task object and distance calculations."""
+        return {
+            "task_distance_center": distances.get("center_distance_km", 0) * 1000,
+            "task_distance_optimized": distances.get("optimized_distance_km", 0) * 1000,
+            "earth_model": task.earth_model.value if task.earth_model else "Unknown",
+            "task_type": task.task_type.value if task.task_type else "Unknown",
+            "takeoff_open": (
+                task.takeoff.time_open.to_json_string()
+                if task.takeoff and task.takeoff.time_open
+                else None
+            ),
+            "takeoff_close": (
+                task.takeoff.time_close.to_json_string()
+                if task.takeoff and task.takeoff.time_close
+                else None
+            ),
+            "sss_time": (
+                task.sss.time_gates[0].to_json_string()
+                if task.sss and task.sss.time_gates
+                else None
+            ),
+            "sss_type": (task.sss.type.value if task.sss and task.sss.type else None),
+            "goal_deadline": (
+                task.goal.deadline.to_json_string()
+                if task.goal and task.goal.deadline
+                else None
+            ),
+            "goal_type": (
+                task.goal.type.value if task.goal and task.goal.type else "Unknown"
+            ),
+        }
+
+    def _format_turnpoints_for_display(self, task, distances: Dict) -> List[Dict]:
+        """Format turnpoints for display using data from distance calculations."""
+        turnpoints = []
+
+        if not task.turnpoints or not distances.get("turnpoints"):
+            return turnpoints
+
+        for i, tp_detail in enumerate(distances["turnpoints"]):
+            # Get the corresponding task turnpoint
+            tp = task.turnpoints[i] if i < len(task.turnpoints) else None
+
+            # Determine display type and styling
+            tp_type, table_class = self._determine_turnpoint_display_type(
+                tp, i, len(distances["turnpoints"])
+            )
+
+            turnpoint_info = {
+                "index": i + 1,
+                "name": tp_detail.get("name", ""),
+                "description": tp.waypoint.description if tp and tp.waypoint else "",
+                "radius": tp_detail.get("radius", 0),
+                "cumulative_distance_center": tp_detail.get("cumulative_center_km", 0),
+                "cumulative_distance_optimized": tp_detail.get(
+                    "cumulative_optimized_km", 0
+                ),
+                "type": tp_type,
+                "table_class": table_class,
+            }
+
+            turnpoints.append(turnpoint_info)
+
+        return turnpoints
+
+    def _determine_turnpoint_display_type(
+        self, tp, index: int, total_count: int
+    ) -> Tuple[str, str]:
+        """Determine the display type and CSS class for a turnpoint."""
+        if tp and tp.type:
+            tp_type_value = tp.type.value if hasattr(tp.type, "value") else str(tp.type)
+            if tp_type_value == "TAKEOFF":
+                return "Takeoff", ""
+            elif tp_type_value == "SSS":
+                return "SSS", "table-primary"
+            elif tp_type_value == "ESS":
+                return "ESS", "table-primary"
+            else:
+                return tp_type_value, ""
+
+        # Fallback to position-based determination
+        if index == 0:
+            return "Takeoff", ""
+        elif index == total_count - 1:
+            return "Goal", "table-danger"
+        else:
+            return "Turnpoint", ""
 
     def load_and_process_task(
         self, task_code: str

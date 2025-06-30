@@ -84,8 +84,20 @@
                 <dt class="col-3">Task type:</dt>
                 <dd class="col-9">{{ task_data.metadata.task_type }}</dd>
                 {% endif %}
+                {% if task_data.metadata.sss_type %}
+                <dt class="col-3">Start type:</dt>
+                <dd class="col-9">{{ task_data.metadata.sss_type }}</dd>
+                {% endif %}
+                {% if task_data.metadata.takeoff_open %}
+                <dt class="col-3">Take-off open at:</dt>
+                <dd class="col-9">{{ task_data.metadata.takeoff_open }} (UTC)</dd>
+                {% endif %}
+                {% if task_data.metadata.takeoff_close %}
+                <dt class="col-3">Take-off closed at:</dt>
+                <dd class="col-9">{{ task_data.metadata.takeoff_close }} (UTC)</dd>
+                {% endif %}
                 {% if task_data.metadata.sss_time %}
-                <dt class="col-3">SSS Open:</dt>
+                <dt class="col-3">SSS open:</dt>
                 <dd class="col-9">{{ task_data.metadata.sss_time }} (UTC)</dd>
                 {% endif %}
                 {% if task_data.metadata.goal_type %}
@@ -93,7 +105,7 @@
                 <dd class="col-9">{{ task_data.metadata.goal_type }}</dd>
                 {% endif %}
                 {% if task_data.metadata.goal_deadline %}
-                <dt class="col-3">Goal deadline:</dt>
+                <dt class="col-3">Task deadline:</dt>
                 <dd class="col-9">{{ task_data.metadata.goal_deadline }} (UTC)</dd>
                 {% endif %}
                 <dt class="col-3">Earth model:</dt>
