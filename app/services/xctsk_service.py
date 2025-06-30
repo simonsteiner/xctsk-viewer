@@ -195,7 +195,7 @@ class XCTSKService:
                             tp_type = "Goal"
                             table_class = "table-danger"
                         else:
-                            tp_type = f"TP{i + 1}"  # Generic turnpoint
+                            tp_type = f"Turnpoint"  # Generic turnpoint
 
                     turnpoint_info = {
                         "index": i + 1,

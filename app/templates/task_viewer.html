@@ -181,7 +181,7 @@
                     <td>{{ tp.radius }}</td>
                     <td>{{ "%.1f"|format(tp.cumulative_distance_center) }}</td>
                     <td>{{ "%.1f"|format(tp.cumulative_distance_optimized) }}</td>
-                    <td>{{ tp.type }}</td>
+                    <td>{% if tp.type=='Turnpoint' %}{% else %}{{ tp.type }}{% endif %}</td>
                     </tr>
                     {% endfor %}
             </tbody>
