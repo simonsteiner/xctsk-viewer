@@ -124,6 +124,26 @@ class XCTSKService:
         except Exception as e:
             return False, f"Error processing task data: {str(e)}", None
 
+    def _format_utc_time(self, time_str: Optional[str]) -> Optional[str]:
+        """
+        Format a UTC time string (e.g., "09:30:00Z" or '"09:30:00Z"') as 'HH:MM (UTC)'.
+        Returns None if input is None or invalid.
+        """
+        if not time_str:
+            return None
+        # Remove quotes if present
+        if time_str.startswith('"') and time_str.endswith('"'):
+            time_str = time_str[1:-1]
+        try:
+            parts = time_str.split(":")
+            if len(parts) < 2:
+                return None
+            hour = int(parts[0])
+            minute = int(parts[1])
+            return f"{hour:02d}:{minute:02d} (UTC)"
+        except Exception:
+            return None
+
     def _extract_task_metadata(self, task, distances: Dict) -> Dict[str, Any]:
         """Extract task metadata from task object and distance calculations."""
         return {
@@ -131,23 +151,23 @@ class XCTSKService:
             "task_distance_optimized": distances.get("optimized_distance_km", 0) * 1000,
             "earth_model": task.earth_model.value if task.earth_model else "Unknown",
             "task_type": task.task_type.value if task.task_type else "Unknown",
-            "takeoff_open": (
+            "takeoff_open": self._format_utc_time(
                 task.takeoff.time_open.to_json_string()
                 if task.takeoff and task.takeoff.time_open
                 else None
             ),
-            "takeoff_close": (
+            "takeoff_close": self._format_utc_time(
                 task.takeoff.time_close.to_json_string()
                 if task.takeoff and task.takeoff.time_close
                 else None
             ),
-            "sss_time": (
+            "sss_time": self._format_utc_time(
                 task.sss.time_gates[0].to_json_string()
                 if task.sss and task.sss.time_gates
                 else None
             ),
             "sss_type": (task.sss.type.value if task.sss and task.sss.type else None),
-            "goal_deadline": (
+            "goal_deadline": self._format_utc_time(
                 task.goal.deadline.to_json_string()
                 if task.goal and task.goal.deadline
                 else None
