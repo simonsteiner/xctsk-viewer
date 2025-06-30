@@ -38,10 +38,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.show_task_view') }}">Home</a>
+                        <a class="nav-link{% if request.endpoint == 'main.show_task_view' %} active{% endif %}" href="{{ url_for('main.show_task_view') }}">Task View</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.about') }}">About</a>
+                        <a class="nav-link{% if request.endpoint == 'main.about' %} active{% endif %}" href="{{ url_for('main.about') }}">About</a>
                     </li>
                 </ul>
             </div>
@@ -52,9 +52,9 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="bg-dark text-light py-2 mt-5">
         <div class="container text-center">
-            <p>&copy; 2025 XCTSK Viewer. A tool for visualizing paragliding task files.<br>
+            <p class="mb-0">&copy; 2025 XCTSK Viewer. A tool for visualizing paragliding task files.<br>
             <small>Created by Simon Steiner, source code available on <a href="https://github.com/simonsteiner/xctsk-viewer">GitHub</a></small></p>
         </div>
     </footer>

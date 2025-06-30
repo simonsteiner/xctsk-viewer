@@ -6,19 +6,28 @@
     --info-color: #0dcaf0;
     --warning-color: #ffc107;
     --danger-color: #dc3545;
-    --dark-color: #212529;
+    --dark-color: #343a40;
 }
 
-/* Hero section styling */
-.hero-section {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%);
-    min-height: 60vh;
+/* Flexbox layout for sticky footer */
+html,
+body {
+    height: 100%;
+}
+
+body {
+    min-height: 100vh;
     display: flex;
-    align-items: center;
+    flex-direction: column;
 }
 
-.min-vh-50 {
-    min-height: 50vh;
+main {
+    flex: 1 0 auto;
+}
+
+/* Footer styling */
+footer {
+    margin-top: auto;
 }
 
 /* Card enhancements */
@@ -29,24 +38,7 @@
 
 .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-}
-
-/* Upload area styling */
-.upload-area {
-    transition: all 0.3s ease;
-    cursor: pointer;
-    background-color: #f8f9fa;
-}
-
-.upload-area:hover {
-    background-color: #e9ecef;
-    border-color: var(--primary-color) !important;
-}
-
-.upload-area.border-success {
-    border-color: var(--success-color) !important;
-    background-color: #d1eddf;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Navigation enhancements */
@@ -57,6 +49,43 @@
 
 .navbar-brand i {
     margin-right: 0.5rem;
+}
+
+/* Nav-link (tab button) default and hover styling */
+button.nav-link,
+a.nav-link {
+    background-color: #f8f9fa;
+    color: #212529;
+    border-radius: 0.5rem;
+    transition: background 0.2s, color 0.2s;
+    border: 1px solid #dee2e6;
+    margin-right: 2px;
+    padding-left: var(--bs-navbar-nav-link-padding-x, 1rem);
+}
+
+a.nav-link {
+    background-color: #b6d4fa;
+    border: 1px solid #b6d4fa;
+}
+
+button.nav-link.active,
+button.nav-link:focus,
+button.nav-link:hover,
+a.nav-link:not(.active):focus,
+a.nav-link:not(.active):hover {
+    background-color: #e9ecef;
+    color: #0d6efd;
+    border-color: #0d6efd;
+    z-index: 2;
+}
+
+a.nav-link.active {
+    background-color: #084298;
+    color: #fff;
+    border-radius: 0.5rem;
+    border-color: var(--primary-color);
+    z-index: 2;
+    transition: background 0.2s, color 0.2s;
 }
 
 /* Button enhancements */
@@ -71,58 +100,6 @@
     padding: 0.75rem 2rem;
 }
 
-/* Footer styling */
-footer {
-    margin-top: auto;
-}
-
-/* Icon enhancements */
-.fa-3x {
-    font-size: 3rem !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .hero-section {
-        min-height: 50vh;
-        text-align: center;
-    }
-    
-    .display-4 {
-        font-size: 2.5rem;
-    }
-    
-    .lead {
-        font-size: 1.1rem;
-    }
-}
-
-/* Loading animation */
-.loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255,255,255,.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Map container */
-#mapContainer {
-    border-radius: 0.5rem;
-    overflow: hidden;
-}
-
-/* File info styling */
-#fileInfo {
-    border-left: 4px solid var(--info-color);
-}
-
 /* Task details table */
 .table {
     margin-bottom: 0;
@@ -134,13 +111,12 @@ footer {
     color: var(--dark-color);
 }
 
+.table th:not([scope="row"]) {
+    background-color: #e9ecef;
+}
+
 /* Alert enhancements */
 .alert {
     border: none;
     border-radius: 0.5rem;
-}
-
-/* Background gradient utilities */
-.bg-gradient {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #0a58ca 100%) !important;
 }
