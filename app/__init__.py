@@ -12,7 +12,9 @@ def create_app():
 
     # Register routes
     from app.routes import main
+    from app.routes import static_routes
 
     app.register_blueprint(main.bp)
+    app.register_blueprint(static_routes.static_bp)
 
     return app
