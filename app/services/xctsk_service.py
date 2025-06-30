@@ -184,13 +184,29 @@ class XCTSKService:
         if not task.turnpoints or not distances.get("turnpoints"):
             return turnpoints
 
+        goal_type = getattr(getattr(task, "goal", None), "type", None)
+        goal_type_value = (
+            goal_type.value
+            if goal_type and hasattr(goal_type, "value")
+            else str(goal_type) if goal_type else None
+        )
+
         for i, tp_detail in enumerate(distances["turnpoints"]):
             # Get the corresponding task turnpoint
             tp = task.turnpoints[i] if i < len(task.turnpoints) else None
 
+            # For the last turnpoint, pass goal_type_value
+            this_goal_type = (
+                goal_type_value if i == len(distances["turnpoints"]) - 1 else None
+            )
+
             # Determine display type and styling
             tp_type, table_class = self._determine_turnpoint_display_type(
-                tp, i, len(distances["turnpoints"])
+                tp,
+                i,
+                len(distances["turnpoints"]),
+                tp_detail.get("radius", 0),
+                this_goal_type,
             )
 
             turnpoint_info = {
@@ -211,17 +227,26 @@ class XCTSKService:
         return turnpoints
 
     def _determine_turnpoint_display_type(
-        self, tp, index: int, total_count: int
+        self, tp, index: int, total_count: int, radius: float = 0, goal_type: str = None
     ) -> Tuple[str, str]:
         """Determine the display type and CSS class for a turnpoint."""
         if tp and tp.type:
             tp_type_value = tp.type.value if hasattr(tp.type, "value") else str(tp.type)
+            # Special handling for Goal Line (goal_type is LINE)
+            if index == total_count - 1 and (goal_type == "LINE"):
+                try:
+                    radius_val = float(getattr(tp, "radius", radius) or radius)
+                except Exception:
+                    radius_val = radius
+                return f"Goal Line ({int(radius_val * 2)}m)", "table-danger"
             if tp_type_value == "TAKEOFF":
                 return "Takeoff", ""
             elif tp_type_value == "SSS":
                 return "SSS", "table-primary"
             elif tp_type_value == "ESS":
                 return "ESS", "table-primary"
+            elif tp_type_value == "GOAL":
+                return "Goal", "table-danger"
             else:
                 return tp_type_value, ""
 
@@ -229,6 +254,8 @@ class XCTSKService:
         if index == 0:
             return "Takeoff", ""
         elif index == total_count - 1:
+            if goal_type == "LINE":
+                return f"Goal Line ({int(radius * 2)}m)", "table-danger"
             return "Goal", "table-danger"
         else:
             return "Turnpoint", ""
