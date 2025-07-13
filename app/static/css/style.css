@@ -109,6 +109,7 @@ a.nav-link.active {
     border-top: none;
     font-weight: 600;
     color: var(--dark-color);
+    vertical-align: middle;
 }
 
 .table th:not([scope="row"]) {
