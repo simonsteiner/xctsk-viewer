@@ -2,9 +2,13 @@ import logging
 
 from flask import Blueprint, render_template, request
 
-from app.utils import (handle_file_upload_errors, process_uploaded_xctsk_file,
-                       process_xctsk_task, render_task_viewer,
-                       validate_xctsk_file)
+from app.utils import (
+    handle_file_upload_errors,
+    process_uploaded_xctsk_file,
+    process_xctsk_task,
+    render_task_viewer,
+    validate_xctsk_file,
+)
 
 bp = Blueprint("main", __name__)
 
