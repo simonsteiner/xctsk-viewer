@@ -184,7 +184,7 @@ class XCTSKService:
 
     def _format_turnpoints_for_display(self, task, distances: Dict) -> List[Dict]:
         """Format turnpoints for display using data from distance calculations."""
-        turnpoints = []
+        turnpoints: List[Dict[str, Any]] = []
 
         if not task.turnpoints or not distances.get("turnpoints"):
             return turnpoints
@@ -242,7 +242,12 @@ class XCTSKService:
         return turnpoints
 
     def _determine_turnpoint_display_type(
-        self, tp, index: int, total_count: int, radius: float = 0, goal_type: str = None
+        self,
+        tp,
+        index: int,
+        total_count: int,
+        radius: float = 0,
+        goal_type: Optional[str] = None,
     ) -> Tuple[str, str]:
         """Determine the display type and CSS class for a turnpoint."""
         if tp and tp.type:
@@ -294,7 +299,7 @@ class XCTSKService:
 
         # Process task data
         process_success, process_message, processed_data = self.process_task_data(
-            task_data
+            task_data if task_data is not None else ""
         )
         return process_success, process_message, processed_data, status_code
 
