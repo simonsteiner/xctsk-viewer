@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import logging
-from flask import render_template, flash
+
+from flask import flash, render_template
 from werkzeug.utils import secure_filename
+
 from app.services import XCTSKService
 
 logger = logging.getLogger(__name__)

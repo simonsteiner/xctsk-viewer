@@ -1,4 +1,5 @@
 import os
+
 from flask import Blueprint, send_from_directory
 
 static_bp = Blueprint("static_routes", __name__)
