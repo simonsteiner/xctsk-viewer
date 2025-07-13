@@ -82,3 +82,26 @@ docker run -p 8080:8080 my-fly-app
 ```
 
 The application will be available at <http://localhost:8080>.
+
+---
+
+## Code Quality & Formatting
+
+To keep the codebase clean and consistent, use the following tools on the `app/` directory. You can run them manually, or automatically before each commit using pre-commit hooks:
+
+### Pre-commit Hook Setup
+
+1. Install pre-commit (once per machine): `pip install pre-commit`
+2. Install the hooks (once per clone): `pre-commit install`
+3. Now, every commit will automatically run:
+
+   ```bash
+   flake8 app/ --extend-ignore E501
+   mypy app/
+   isort app/
+   black app/
+   ```
+
+You can also run all hooks manually: `pre-commit run --all-files`
+
+If you need to skip hooks for a commit, use `git commit --no-verify`.
