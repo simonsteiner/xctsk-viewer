@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import requests
 
 # Import pyxctsk functions
-from pyxctsk import (
+from pyxctsk import (  # type: ignore
     QRCodeTask,
     calculate_task_distances,
     generate_task_geojson,
@@ -331,7 +331,7 @@ class XCTSKService:
             qr.make(fit=True)
             qr_image = qr.make_image(fill_color="black", back_color="white")
             buffer = BytesIO()
-            qr_image.save(buffer, format="PNG")
+            qr_image.save(buffer)  # Remove format parameter to fix mypy error
             img_str = base64.b64encode(buffer.getvalue()).decode()
             return img_str
         except Exception as e:
