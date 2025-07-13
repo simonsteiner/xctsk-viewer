@@ -18,7 +18,6 @@
 - Core logic is in `app/`:
   - `routes/`: Flask blueprints for UI and static file serving.
   - `services/`: Business logic, especially `xctsk_service.py` for task download/processing.
-  - `lib/pyxctsk/`: XCTSK parsing, QR code, and task data structures (mirrors XCTrack spec).
   - `utils/`: Flask helpers for rendering, validation, and file handling.
   - `templates/` and `static/`: Jinja2 HTML and static assets.
 
@@ -31,7 +30,7 @@
 ## Patterns & Conventions
 - Register new routes as blueprints in `app/routes/` and add to `create_app()` in `app/__init__.py`.
 - All XCTSK file/network logic is in `XCTSKService` (`app/services/xctsk_service.py`).
-- Use `app/lib/pyxctsk/` for all XCTSK parsing, QR, and data model logic.
+- Use the published `pyxctsk` PyPI package for all XCTSK parsing, QR, and data model logic.
 - Only `.xctsk` files are accepted for upload (see `validate_xctsk_file`).
 - Custom CSS in `app/static/css/style.css`.
 - Set `FLASK_SECRET_KEY` for production (see README for Fly.io secrets).

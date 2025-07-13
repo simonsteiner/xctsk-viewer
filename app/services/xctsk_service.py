@@ -2,16 +2,16 @@
 Service for handling XCTSK file operations including download and processing.
 """
 
-from typing import Dict, Optional, Tuple, Any, List
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-import qrcode
 import base64
 from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple
 
+import requests
 # Import pyxctsk functions
-from app.lib.pyxctsk import parse_task, calculate_task_distances, generate_task_geojson
+from pyxctsk import (QRCodeTask, calculate_task_distances,
+                     generate_task_geojson, parse_task)
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 
 class XCTSKService:
@@ -285,7 +285,7 @@ class XCTSKService:
 
     def generate_qr_code(self, task) -> Optional[str]:
         """
-        Generate a QR code for the task in XCTSK format.
+        Generate a QR code for the task in XCTSK format using pyxctsk's QRCodeTask.
 
         Args:
             task: The task object to generate QR code for
@@ -294,11 +294,13 @@ class XCTSKService:
             Base64 encoded PNG image data or None if generation fails
         """
         try:
-            # Convert task to QR code format
-            qr_task = task.to_qr_code_task()
+            # Use pyxctsk to get the QR code string (XCTSK:...)
+            qr_task = QRCodeTask.from_task(task)
             qr_string = qr_task.to_string()
 
-            # Generate QR code
+            # Use qrcode only for image encoding
+            import qrcode
+
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -307,17 +309,11 @@ class XCTSKService:
             )
             qr.add_data(qr_string)
             qr.make(fit=True)
-
-            # Create QR code image
             qr_image = qr.make_image(fill_color="black", back_color="white")
-
-            # Convert to base64 string
             buffer = BytesIO()
             qr_image.save(buffer, format="PNG")
             img_str = base64.b64encode(buffer.getvalue()).decode()
-
             return img_str
-
         except Exception as e:
             print(f"Error generating QR code: {e}")
             return None
