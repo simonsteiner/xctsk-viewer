@@ -72,7 +72,7 @@
     {% if task_data %}
     <div class="row">
         <div class="col-12 col-lg-8">
-            <h3>XCTrack competition task information</h3>
+            <h3>{% if task_data.task.task_type == 'W' %}XCTrack route task information{% else %}XCTrack competition task information{% endif %}</h3>
             <dl class="row">
                 <dt class="col-3">Task code:</dt>
                 <dd class="col-9">{{ task_code }}</dd>
@@ -82,7 +82,7 @@
                 {% endif %}
                 {% if task_data.task.task_type %}
                 <dt class="col-3">Task type:</dt>
-                <dd class="col-9">{{ task_data.metadata.task_type }}</dd>
+                <dd class="col-9">{% if task_data.task.task_type == 'W' %}Waypoints ({{ task_data.metadata.task_type }}){% else %}{{ task_data.metadata.task_type }}{% endif %}</dd>
                 {% endif %}
                 {% if task_data.metadata.sss_type %}
                 <dt class="col-3">Start type:</dt>
@@ -106,24 +106,27 @@
                     <span class="utc-time" data-utc="{{ task_data.metadata.sss_time }}">{{ task_data.metadata.sss_time }}</span>
                 </dd>
                 {% endif %}
-                {% if task_data.metadata.goal_type %}
-                <dt class="col-3">Goal type:</dt>
-                <dd class="col-9">{{ task_data.metadata.goal_type }}</dd>
-                {% endif %}
                 {% if task_data.metadata.goal_deadline %}
                 <dt class="col-3">Task deadline:</dt>
                 <dd class="col-9">
                     <span class="utc-time" data-utc="{{ task_data.metadata.goal_deadline }}">{{ task_data.metadata.goal_deadline }}</span>
                 </dd>
                 {% endif %}
+                {% if not task_data.task.task_type == 'W' %}
                 <dt class="col-3">Earth model:</dt>
                 <dd class="col-9">{{ task_data.metadata.earth_model }}</dd>
+                {% endif %}
                 {% if task_data.metadata.task_distance_center %}
                 <dt class="col-3">Task distance:</dt>
-                <dd class="col-9">{{ "%.1f"|format(task_data.metadata.task_distance_center / 1000) }}km (through
-                    centers)</dd>
+                <dd class="col-9">
+                    {% if task_data.task.task_type == 'W' %}
+                        {{ "%.1f"|format(task_data.metadata.task_distance_center / 1000) }}km
+                    {% else %}
+                        {{ "%.1f"|format(task_data.metadata.task_distance_center / 1000) }}km (through centers)
+                    {% endif %}
+                </dd>
                 {% endif %}
-                {% if task_data.metadata.task_distance_optimized %}
+                {% if task_data.metadata.task_distance_optimized and task_data.task.task_type != 'W' %}
                 <dt class="col-3"></dt>
                 <dd class="col-9">{{ "%.1f"|format(task_data.metadata.task_distance_optimized / 1000) }}km (optimized)
                 </dd>
@@ -183,11 +186,11 @@
                 <tr>
                     <th>#</th>
                     <th>Name</th>
-                    <th>Description</th>
-                    <th class="text-end">Radius</th>
+                    {% if not task_data.task.task_type == 'W' %}<th>Description</th>{% endif %}
+                    {% if not task_data.task.task_type == 'W' %}<th class="text-end">Radius</th>{% endif %}
                     <th class="text-end">Distance<br>(km)</th>
-                    <th class="text-end">Optimized<br>(km)</th>
-                    <th>Type</th>
+                    {% if not task_data.task.task_type == 'W' %}<th class="text-end">Optimized<br>(km)</th>{% endif %}
+                    {% if not task_data.task.task_type == 'W' %}<th>Type</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -196,7 +199,8 @@
                     title="Start of speed section" {% elif tp.type=='ESS' %} title="End of speed section" {% endif %}>
                     <th scope="row">{{ tp.index }}</th>
                     <td>{{ tp.name }}</td>
-                    <td>{{ tp.description }}</td>
+                    {% if not task_data.task.task_type == 'W' %}<td>{{ tp.description }}</td>{% endif %}
+                    {% if not task_data.task.task_type == 'W' %}
                     <td class="text-end">
                         {% if tp.radius < 1000 %}
                             {{ tp.radius }}m
@@ -205,11 +209,12 @@
                             {{ ("%g" % km) }}km
                         {% endif %}
                     </td>
+                    {% endif %}
                     <td class="text-end">{{ "%.1f"|format(tp.cumulative_distance_center) }}</td>
-                    <td class="text-end">{{ "%.1f"|format(tp.cumulative_distance_optimized) }}</td>
-                    <td>{% if tp.type=='Turnpoint' %}{% else %}{{ tp.type }}{% endif %}</td>
-                    </tr>
-                    {% endfor %}
+                    {% if not task_data.task.task_type == 'W' %}<td class="text-end">{{ "%.1f"|format(tp.cumulative_distance_optimized) }}</td>{% endif %}
+                    {% if not task_data.task.task_type == 'W' %}<td>{% if tp.type=='Turnpoint' %}{% else %}{{ tp.type }}{% endif %}</td>{% endif %}
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>

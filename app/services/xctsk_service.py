@@ -7,9 +7,14 @@ from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
+
 # Import pyxctsk functions
-from pyxctsk import (QRCodeTask, calculate_task_distances,
-                     generate_task_geojson, parse_task)
+from pyxctsk import (
+    QRCodeTask,
+    calculate_task_distances,
+    generate_task_geojson,
+    parse_task,
+)
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -191,6 +196,12 @@ class XCTSKService:
             else str(goal_type) if goal_type else None
         )
 
+        is_w_task = False
+        if hasattr(task, "task_type"):
+            # Accept both string and enum value
+            ttype = getattr(task.task_type, "value", task.task_type)
+            is_w_task = ttype == "w" or ttype == "W"
+
         for i, tp_detail in enumerate(distances["turnpoints"]):
             # Get the corresponding task turnpoint
             tp = task.turnpoints[i] if i < len(task.turnpoints) else None
@@ -208,6 +219,10 @@ class XCTSKService:
                 tp_detail.get("radius", 0),
                 this_goal_type,
             )
+
+            # For W task, set first turnpoint table_class to table-primary
+            if is_w_task and i == 0:
+                table_class = "table-primary"
 
             turnpoint_info = {
                 "index": i + 1,
