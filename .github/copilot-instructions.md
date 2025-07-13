@@ -25,7 +25,7 @@
 - **Run locally:** `.venv/bin/python run.py` (Flask runs on port 8080).
 - **Install dependencies:** `pip install -e .` in an activated `.venv`.
 - **Deploy:** Use Fly.io with `fly deploy` (see `fly.toml`). Dockerfile provided for container builds.
-- **Testing:** No formal test suite; manual testing via web UI and CLI tools in `lib/pyxctsk/cli.py`.
+- **Testing:** No formal test suite; manual testing via web UI and CLI tools from the `pyxctsk` package.
 
 ## Patterns & Conventions
 - Register new routes as blueprints in `app/routes/` and add to `create_app()` in `app/__init__.py`.
@@ -38,12 +38,12 @@
 ## Integration Points
 - Downloads XCTSK tasks from `https://tools.xcontest.org` via HTTP.
 - Uses `qrcode`, `pyzbar`, and `Pillow` for QR code features.
-- `app/lib/pyxctsk/cli.py` provides conversion and analysis tools for XCTSK files.
+- The `pyxctsk` package provides conversion and analysis tools for XCTSK files.
 
 ## Examples
 - To add a new route: create a blueprint in `app/routes/` and register it in `app/__init__.py`.
-- To process a new XCTSK file type: add parsing logic in `app/lib/pyxctsk/` and update `XCTSKService` as needed.
+- To process a new XCTSK file type: update `XCTSKService` as needed to work with the `pyxctsk` package.
 
 ## Important Notes
-- Keep logic for XCTSK parsing and business rules in `lib/pyxctsk/` and `services/`—not in route handlers.
+- Keep logic for XCTSK parsing and business rules in `services/` and use the `pyxctsk` package—not in route handlers.
 - Avoid unnecessary configuration or complexity without clear need or request.
