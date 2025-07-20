@@ -10,6 +10,7 @@ flake8==7.3.0
 Flask==3.1.1
 geographiclib==2.0
 geopy==2.4.1
+gunicorn==23.0.0
 identify==2.6.12
 idna==3.10
 isort==6.0.1
