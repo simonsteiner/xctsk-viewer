@@ -1,7 +1,14 @@
+"""Flask app factory for xctsk-viewer.
+
+Initializes the Flask application, configures file upload settings,
+and registers route blueprints.
+"""
+
 from flask import Flask
 
 
 def create_app():
+    """Create and configure the Flask app instance."""
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "your-secret-key-change-in-production"
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+"""Helpers for rendering, validating, and processing XCTSK tasks and uploads in the Flask app."""
 
 import logging
 
@@ -18,8 +18,7 @@ def render_task_viewer(
     show_upload=False,
     is_upload=False,
 ):
-    """
-    Centralized function to render task_viewer.html with consistent parameters.
+    """Centralized function to render task_viewer.html with consistent parameters.
 
     Args:
         task_code: The task code to display
@@ -44,8 +43,7 @@ def render_task_viewer(
 
 
 def validate_xctsk_file(file):
-    """
-    Validate uploaded XCTSK file.
+    """Validate uploaded XCTSK file.
 
     Args:
         file: Flask file object from request.files
@@ -63,8 +61,7 @@ def validate_xctsk_file(file):
 
 
 def process_xctsk_task(task_code, xctsk_service=None):
-    """
-    Process XCTSK task with consistent error handling.
+    """Process XCTSK task with consistent error handling.
 
     Args:
         task_code: The task code to process
@@ -107,8 +104,7 @@ def process_xctsk_task(task_code, xctsk_service=None):
 
 
 def process_uploaded_xctsk_file(file_content, filename, xctsk_service=None):
-    """
-    Process uploaded XCTSK file content.
+    """Process uploaded XCTSK file content.
 
     Args:
         file_content: The file content as string
@@ -147,8 +143,7 @@ def process_uploaded_xctsk_file(file_content, filename, xctsk_service=None):
 
 
 def handle_file_upload_errors(error_message):
-    """
-    Handle file upload errors with consistent flash messaging.
+    """Handle file upload errors with consistent flash messaging.
 
     Args:
         error_message: The error message to flash

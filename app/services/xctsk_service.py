@@ -1,6 +1,4 @@
-"""
-Service for handling XCTSK file operations including download and processing.
-"""
+"""Service for handling XCTSK file operations including download and processing."""
 
 import base64
 from io import BytesIO
@@ -43,13 +41,14 @@ class XCTSKService:
     def download_task_data(
         self, task_code: str, version: int = 1
     ) -> Tuple[bool, str, Optional[str], Optional[int]]:
-        """
-        Download task data from XContest API.
+        """Download task data from XContest API.
 
         Args:
             task_code: The task code to download
             version: API version (1 or 2)
-            Returns: Tuple of (success, message, task_data_string, status_code)
+
+        Returns:
+            Tuple of (success, message, task_data_string, status_code)
         """
         endpoint = (
             f"/api/xctsk/load/{task_code}"
@@ -91,8 +90,7 @@ class XCTSKService:
             return False, f"Network error downloading task {task_code}: {e}", None, None
 
     def process_task_data(self, task_data: str) -> Tuple[bool, str, Optional[Dict]]:
-        """
-        Process XCTSK task data using pyxctsk functions.
+        """Process XCTSK task data using pyxctsk functions.
 
         Args:
             task_data: Raw task data string from XContest API
@@ -130,8 +128,8 @@ class XCTSKService:
             return False, f"Error processing task data: {str(e)}", None
 
     def _format_utc_time(self, time_str: Optional[str]) -> Optional[str]:
-        """
-        Format a UTC time string (e.g., "09:30:00Z" or '"09:30:00Z"') as 'HH:MM (UTC)'.
+        """Format a UTC time string (e.g., "09:30:00Z" or '"09:30:00Z"') as 'HH:MM (UTC)'.
+
         Returns None if input is None or invalid.
         """
         if not time_str:
@@ -283,8 +281,7 @@ class XCTSKService:
     def load_and_process_task(
         self, task_code: str
     ) -> Tuple[bool, str, Optional[Dict], Optional[int]]:
-        """
-        Download and process a task in one operation.
+        """Download and process a task in one operation.
 
         Args:
             task_code: The task code to load and process
@@ -304,8 +301,7 @@ class XCTSKService:
         return process_success, process_message, processed_data, status_code
 
     def generate_qr_code(self, task) -> Optional[str]:
-        """
-        Generate a QR code for the task in XCTSK format using pyxctsk's QRCodeTask.
+        """Generate a QR code for the task in XCTSK format using pyxctsk's QRCodeTask.
 
         Args:
             task: The task object to generate QR code for

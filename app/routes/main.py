@@ -1,3 +1,10 @@
+"""Main application routes for the XCTSK viewer.
+
+This module handles the main routes for viewing and uploading XCTSK tasks,
+including rendering the task viewer, handling file uploads, and displaying
+task-specific views.
+"""
+
 import logging
 
 from flask import Blueprint, render_template, request
@@ -19,11 +26,13 @@ logger = logging.getLogger(__name__)
 
 @bp.route("/")
 def index():
+    """Handle the root route and render the main task viewer page."""
     return show_task_view()
 
 
 @bp.route("/about")
 def about():
+    """Render the about page."""
     return render_template("about.html")
 
 

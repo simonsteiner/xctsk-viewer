@@ -1,4 +1,8 @@
-# Utils package
+"""Utility functions and helpers for the xctsk-viewer Flask app.
+
+Includes file upload handling, XCTSK file processing, validation, and rendering helpers.
+"""
+
 from .route_helpers import (
     handle_file_upload_errors,
     process_uploaded_xctsk_file,
