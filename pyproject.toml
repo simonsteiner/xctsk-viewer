@@ -31,6 +31,8 @@ dev = [
     "flake8>=7.3.0",
     "isort>=6.0.1",
     "mypy>=1.16.1",
+    "pre_commit>=4.2.0",
+    "pydocstyle>=6.3.0",
 ]
 
 [project.urls]

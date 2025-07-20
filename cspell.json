@@ -1,0 +1,17 @@
+{
+    "version": "0.2",
+    "ignorePaths": [],
+    "dictionaryDefinitions": [
+        {
+            "name": "xctsk-viewer",
+            "path": "./cspell-dictionary.txt"
+        }
+    ],
+    "dictionaries": [
+        "python",
+        "xctsk-viewer"
+    ],
+    "words": [],
+    "ignoreWords": [],
+    "import": []
+}
