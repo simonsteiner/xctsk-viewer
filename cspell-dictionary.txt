@@ -3,7 +3,9 @@ envrc
 FLYCTL
 forcelist
 htmlcov
+jsonify
 latlng
+openair
 PYTHONDONTWRITEBYTECODE
 PYTHONUNBUFFERED
 pyxctsk

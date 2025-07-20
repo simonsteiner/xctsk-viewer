@@ -31,7 +31,7 @@ pycodestyle==2.14.0
 pydocstyle==6.3.0
 pyflakes==3.4.0
 pyproj==3.7.1
-pyxctsk @ git+https://github.com/simonsteiner/pyxctsk
+pyxctsk @ git+https://github.com/simonsteiner/pyxctsk@e874a2c4c60864a9516581079376ff00981652bc
 PyYAML==6.0.2
 pyzbar==0.1.9
 qrcode==8.2

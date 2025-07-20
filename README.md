@@ -107,9 +107,9 @@ To keep the codebase clean and consistent, use the following tools on the `app/`
    isort app/
    black app/
    pydocstyle --convention=google app/
-   npx cspell --config cspell.json
+   npx cspell app/
    ```
 
-You can also run all hooks manually: `pre-commit run --all-files`
+You can also run all hooks manually: `pre-commit run --all-files` or specific hooks `pre-commit run cspell --all-files`
 
 If you need to skip hooks for a commit, use `git commit --no-verify`.
