@@ -1,65 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}XCTSK Viewer 🪂{% endblock %}</title>
-    
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <!-- Open Graph meta tags -->
-    <meta property="og:title" content="{% block og_title %}XCTSK Viewer{% endblock %}">
-    <meta property="og:description" content="A Python-based interactive visualization tool for viewing XCTSK files. XCTSK is a file format for paragliding competition tasks for XCTrack.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url }}">
-    <meta property="og:site_name" content="XCTSK Viewer">
-    
+    <meta
+      property="og:title"
+      content="{% block og_title %}XCTSK Viewer{% endblock %}"
+    />
+    <meta
+      property="og:description"
+      content="A Python-based interactive visualization tool for viewing XCTSK files. XCTSK is a file format for paragliding competition tasks for XCTrack."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ request.url }}" />
+    <meta property="og:site_name" content="XCTSK Viewer" />
+
     <!-- Twitter Card meta tags -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="{% block twitter_title %}XCTSK Viewer{% endblock %}">
-    <meta name="twitter:description" content="A Python-based interactive visualization tool for viewing XCTSK files. XCTSK is a file format for paragliding competition tasks for XCTrack.">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-<body>
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="{% block twitter_title %}XCTSK Viewer{% endblock %}"
+    />
+    <meta
+      name="twitter:description"
+      content="A Python-based interactive visualization tool for viewing XCTSK files. XCTSK is a file format for paragliding competition tasks for XCTrack."
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/style.css') }}"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.show_task_view') }}">
-                XCTSK Viewer 🪂
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link{% if request.endpoint == 'main.show_task_view' %} active{% endif %}" href="{{ url_for('main.show_task_view') }}">Task View</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link{% if request.endpoint == 'main.about' %} active{% endif %}" href="{{ url_for('main.about') }}">About</a>
-                    </li>
-                </ul>
-            </div>
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('main.show_task_view') }}">
+          XCTSK Viewer 🪂
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'main.show_task_view' %} active{% endif %}"
+                href="{{ url_for('main.show_task_view') }}"
+                >Task View</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'main.about' %} active{% endif %}"
+                href="{{ url_for('main.about') }}"
+                >About</a
+              >
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    <main>{% block content %}{% endblock %}</main>
 
     <footer class="bg-dark text-light py-2 mt-5">
-        <div class="container text-center">
-            <p class="mb-0">&copy; 2025 XCTSK Viewer. A tool for visualizing paragliding task files.<br>
-            <small>Created by Simon Steiner, source code available on <a href="https://github.com/simonsteiner/xctsk-viewer">GitHub</a></small></p>
-        </div>
+      <div class="container text-center">
+        <p class="mb-0">
+          &copy; 2025 XCTSK Viewer. A tool for visualizing paragliding task
+          files.<br />
+          <small
+            >Created by Simon Steiner, source code available on
+            <a href="https://github.com/simonsteiner/xctsk-viewer"
+              >GitHub</a
+            ></small
+          >
+        </p>
+      </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     {% block scripts %}{% endblock %}
-</body>
+  </body>
 </html>
