@@ -14,14 +14,20 @@ cd xctsk-viewer
 
 # Create and activate a virtual environment
 python3 -m venv .venv
+# (Optional) If Python 3.13 is installed, create virtual environment with:
+python3.13 -m venv .venv
+
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install --upgrade pip
 # Install the package in development mode
-pip install -e .
+pip install -e ".[dev]"
 # lock dependency versions for deployment
 pip freeze > requirements.txt
+
+# Install the latest pyxctsk from GitHub
+.venv/bin/pip install --upgrade git+https://github.com/simonsteiner/pyxctsk
 ```
 
 ### Running the Application
@@ -96,10 +102,12 @@ To keep the codebase clean and consistent, use the following tools on the `app/`
 3. Now, every commit will automatically run:
 
    ```bash
-   flake8 app/ --extend-ignore E501
+   flake8 app/ --extend-ignore E501, E203
    mypy app/
    isort app/
    black app/
+   pydocstyle --convention=google app/
+   npx cspell --config cspell.json
    ```
 
 You can also run all hooks manually: `pre-commit run --all-files`
