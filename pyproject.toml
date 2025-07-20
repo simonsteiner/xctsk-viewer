@@ -22,7 +22,8 @@ keywords = ["xctsk", "xctask", "paragliding", "visualization", "flask"]
 requires-python = ">=3.8"
 dependencies = [
     "flask>=3.1.1",
-    "pyxctsk @ git+https://github.com/simonsteiner/pyxctsk"
+    "pyxctsk @ git+https://github.com/simonsteiner/pyxctsk",
+    "requests>=2.32.4"
 ]
 
 [project.optional-dependencies]
