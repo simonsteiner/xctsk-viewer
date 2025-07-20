@@ -118,14 +118,97 @@ class XCTSKService:
             }
 
             # Generate QR code for the task
-            qr_code_data = self.generate_qr_code(task)
+            qr_code_data = self.generate_qr_code_string(task)
             if qr_code_data:
                 task_info["qr_code"] = qr_code_data
+                qr_code_base64 = self.generate_qr_code_base64(qr_code_data)
+                if qr_code_base64:
+                    task_info["qr_code_base64"] = qr_code_base64
 
             return True, "Task processed successfully", task_info
 
         except Exception as e:
             return False, f"Error processing task data: {str(e)}", None
+
+    def load_and_process_task(
+        self, task_code: str
+    ) -> Tuple[bool, str, Optional[Dict], Optional[int]]:
+        """Download and process a task in one operation.
+
+        Args:
+            task_code: The task code to load and process
+
+        Returns:
+            Tuple of (success, message, processed_task_data, status_code)
+        """
+        # Download task data
+        success, message, task_data, status_code = self.download_task_data(task_code)
+        if not success:
+            return success, message, None, status_code
+
+        # Process task data
+        process_success, process_message, processed_data = self.process_task_data(
+            task_data if task_data is not None else ""
+        )
+        return process_success, process_message, processed_data, status_code
+
+    def get_task_data_by_code(self, task_code: str) -> Optional[dict]:
+        """Get processed task data as a dict for a given task code, or None if not found/invalid."""
+        success, message, processed_data, status_code = self.load_and_process_task(
+            task_code
+        )
+        if success and processed_data:
+            return processed_data
+        return None
+
+    def generate_qr_code_string(self, task) -> Optional[str]:
+        """Generate a QR code string for the task in XCTSK format using pyxctsk's QRCodeTask.
+
+        Args:
+            task: The task object to generate QR code for
+
+        Returns:
+            str: The QR code string in XCTSK format, or None if generation fails.
+        """
+        try:
+            # Use pyxctsk to get the QR code string (XCTSK:...)
+            qr_task = QRCodeTask.from_task(task)
+            qr_string: str = qr_task.to_string()
+            return qr_string
+        except Exception as e:
+            print(f"Error generating QR code: {e}")
+            return None
+
+    def generate_qr_code_base64(self, qr_string) -> Optional[str]:
+        """Generate a QR code for the task in XCTSK format using pyxctsk's QRCodeTask.
+
+        Args:
+            qr_string: The QR code string to generate a base64 image for
+
+        Returns:
+            Base64 encoded PNG image data or None if generation fails
+        """
+        try:
+            # Use qrcode only for image encoding
+            import qrcode
+
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,
+                box_size=8,
+                border=2,
+            )
+            qr.add_data(qr_string)
+            qr.make(fit=True)
+            qr_image = qr.make_image(fill_color="black", back_color="white")  # type: ignore[no-untyped-call]
+            buffer = BytesIO()
+            qr_image.save(buffer)  # Remove format parameter to fix mypy error
+            img_bytes = base64.b64encode(buffer.getvalue())
+            img_str: str = img_bytes.decode()
+            return img_str
+        except Exception as e:
+            print(f"Error generating QR code: {e}")
+            return None
 
     def _format_utc_time(self, time_str: Optional[str]) -> Optional[str]:
         """Format a UTC time string (e.g., "09:30:00Z" or '"09:30:00Z"') as 'HH:MM (UTC)'.
@@ -277,59 +360,3 @@ class XCTSKService:
             return "Goal", "table-danger"
         else:
             return "Turnpoint", ""
-
-    def load_and_process_task(
-        self, task_code: str
-    ) -> Tuple[bool, str, Optional[Dict], Optional[int]]:
-        """Download and process a task in one operation.
-
-        Args:
-            task_code: The task code to load and process
-
-        Returns:
-            Tuple of (success, message, processed_task_data, status_code)
-        """
-        # Download task data
-        success, message, task_data, status_code = self.download_task_data(task_code)
-        if not success:
-            return success, message, None, status_code
-
-        # Process task data
-        process_success, process_message, processed_data = self.process_task_data(
-            task_data if task_data is not None else ""
-        )
-        return process_success, process_message, processed_data, status_code
-
-    def generate_qr_code(self, task) -> Optional[str]:
-        """Generate a QR code for the task in XCTSK format using pyxctsk's QRCodeTask.
-
-        Args:
-            task: The task object to generate QR code for
-
-        Returns:
-            Base64 encoded PNG image data or None if generation fails
-        """
-        try:
-            # Use pyxctsk to get the QR code string (XCTSK:...)
-            qr_task = QRCodeTask.from_task(task)
-            qr_string = qr_task.to_string()
-
-            # Use qrcode only for image encoding
-            import qrcode
-
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_M,
-                box_size=8,
-                border=2,
-            )
-            qr.add_data(qr_string)
-            qr.make(fit=True)
-            qr_image = qr.make_image(fill_color="black", back_color="white")
-            buffer = BytesIO()
-            qr_image.save(buffer)  # Remove format parameter to fix mypy error
-            img_str = base64.b64encode(buffer.getvalue()).decode()
-            return img_str
-        except Exception as e:
-            print(f"Error generating QR code: {e}")
-            return None

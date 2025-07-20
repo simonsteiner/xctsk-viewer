@@ -17,9 +17,10 @@ def create_app():
     app.config["UPLOAD_EXTENSIONS"] = [".xctsk"]
 
     # Register routes
-    from app.routes import main, static_routes
+    from app.routes import api, main, static_routes
 
     app.register_blueprint(main.bp)
     app.register_blueprint(static_routes.static_bp)
+    app.register_blueprint(api.api_bp)
 
     return app

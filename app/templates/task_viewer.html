@@ -71,7 +71,7 @@
 
     {% if task_data %}
     <div class="row">
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-7">
             <h3>{% if task_data.task.task_type == 'W' %}XCTrack route task information{% else %}XCTrack competition task information{% endif %}</h3>
             <dl class="row">
                 <dt class="col-3">Task code:</dt>
@@ -133,7 +133,7 @@
                 {% endif %}
             </dl>
         </div>
-        <div class="col-12 col-lg-4 text-center">
+        <div class="col-12 col-lg-5 text-center">
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Task Actions</h5>
@@ -143,12 +143,13 @@
                         <h6 class="mb-2">
                             <i class="fas fa-qrcode"></i> Task QR Code
                         </h6>
-                        <img src="data:image/png;base64,{{ task_data.qr_code }}" 
-                             class="img-fluid mb-2" 
-                             style="max-width: 300px;" 
-                             alt="Task QR Code">
-                        <div class="small text-muted">
-                            Scan with XCTSK compatible app
+                        <img src="data:image/png;base64,{{ task_data.qr_code_base64 }}"
+                             class="img-fluid mb-2 qrcode" 
+                             alt="QR Code for {{ task_code }}" loading="lazy">
+                        <div class="small mt-1">
+                            <a href="/api/qrcode_image/qrcode_{{ task_code }}.png" download="qrcode_{{ task_code }}.png" class="link-secondary">
+                                <i class="fas fa-download"></i> Download QR image
+                            </a>
                         </div>
                     </div>
                     {% endif %}
@@ -181,7 +182,7 @@
     {% if task_data.turnpoints %}
     <h4 class="mt-4">Turnpoints</h4>
     <div class="table-responsive">
-        <table class="table table-sm">
+        <table class="table table-sm table-hover">
             <thead>
                 <tr>
                     <th>#</th>

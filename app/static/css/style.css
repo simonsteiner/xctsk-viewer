@@ -121,3 +121,12 @@ a.nav-link.active {
     border: none;
     border-radius: 0.5rem;
 }
+
+img.qrcode {
+    max-width: 300px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 2px;
+    vertical-align: middle;
+}
