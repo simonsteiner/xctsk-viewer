@@ -2,8 +2,8 @@
 
 import logging
 
-from flask import Blueprint, Response, jsonify
-from pyxctsk import generate_qrcode_image
+from flask import Blueprint, Response, jsonify, make_response
+from pyxctsk import generate_qrcode_image, task_to_kml
 
 from app.services.xctsk_service import XCTSKService
 from app.utils.task_cache import get_task_cache
@@ -13,6 +13,18 @@ api_bp = Blueprint("api", __name__)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def error_response(message, status=500, stacktrace=None):
+    """Generate a standardized error response."""
+    body = {"error": message}
+    if stacktrace:
+        body["stacktrace"] = stacktrace
+    return Response(
+        jsonify(body).get_data(as_text=False),
+        status=status,
+        mimetype="application/json",
+    )
 
 
 @api_bp.route("/api/xctsk/<task_code>", methods=["GET"])
@@ -61,17 +73,6 @@ def qrcode_image(task_code: str) -> Response:
     Returns:
         Response: Flask response containing the PNG image of the QR code if successful, or a JSON error message with appropriate status code if not.
     """
-
-    def error_response(message, status=500, stacktrace=None):
-        body = {"error": message}
-        if stacktrace:
-            body["stacktrace"] = stacktrace
-        return Response(
-            jsonify(body).get_data(as_text=False),
-            status=status,
-            mimetype="application/json",
-        )
-
     # Try to get task data from cache first
     cache = get_task_cache()
     cache_key = f"task_data_{task_code}"
@@ -120,4 +121,54 @@ def qrcode_image(task_code: str) -> Response:
         return error_response(
             f"Error generating QR code image: {str(e)}",
             stacktrace=traceback.format_exc(),
+        )
+
+
+@api_bp.route("/api/kml/task_<task_code>.kml", methods=["GET"])
+def kml_download(task_code: str) -> Response:
+    """API endpoint to generate and return a KML file for the given XCTSK task code.
+
+    Args:
+        task_code (str): The code of the XCTSK task to generate KML for.
+
+    Returns:
+        Response: Flask response containing the KML file if successful, or a JSON error message with appropriate status code if not.
+    """
+    try:
+        # Try to get task data from cache first
+        cache = get_task_cache()
+        cache_key = f"task_data_{task_code}"
+        task_data = cache.get(cache_key)
+
+        if not task_data:
+            # Fall back to fetching from service if not in cache
+            try:
+                service = XCTSKService()
+                task_data = service.get_task_data_by_code(task_code)
+                if task_data:
+                    # Cache it for future requests
+                    cache.set(cache_key, task_data)
+            except Exception as e:
+                import traceback
+
+                return error_response(
+                    f"Error fetching task data: {str(e)}",
+                    stacktrace=traceback.format_exc(),
+                )
+
+        if not task_data:
+            return error_response("Task not found or invalid.", status=404)
+
+        kml_str = task_to_kml(task_data.get("task"))  # type: ignore
+        response = make_response(kml_str)
+        response.mimetype = "application/vnd.google-earth.kml+xml"
+        response.headers["Content-Disposition"] = (
+            f"attachment; filename=task_{task_code}.kml"
+        )
+        return response
+    except Exception as e:
+        import traceback
+
+        return error_response(
+            f"Error generating KML: {str(e)}", stacktrace=traceback.format_exc()
         )

@@ -117,6 +117,9 @@ class XCTSKService:
                 "metadata": self._extract_task_metadata(task, distances),
             }
 
+            # print("Task info generated successfully:")
+            # print(task_info)
+
             # Generate QR code for the task
             qr_code_data = self.generate_qr_code_string(task)
             if qr_code_data:

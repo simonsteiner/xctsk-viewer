@@ -191,6 +191,17 @@
                         >
                             <i class="fas fa-download"></i> Download .xctsk
                         </a>
+                        <a class="btn btn-outline-primary"
+                            href="/api/kml/task_{{ task_code }}.kml"
+                            data-umami-event="download_kml"
+                            data-umami-event-task-code="task_{{ task_code }}.kml"
+                            download="task_{{ task_code }}.kml"
+                            role="button"
+                            data-bs-toggle="tooltip"
+                            title="Download KML for Google Earth or mapping tools"
+                        >
+                            <i class="fas fa-globe"></i> Download .kml
+                        </a>
                         <a class="btn btn-outline-secondary"
                             href="https://tools.xcontest.org/xctsk/load?taskCode={{ task_code }}"
                             data-umami-event="view_task_on_xcontest"
