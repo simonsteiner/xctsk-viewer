@@ -130,3 +130,11 @@ img.qrcode {
     padding: 2px;
     vertical-align: middle;
 }
+
+.link-secondary {
+    text-decoration: none;
+}
+
+.link-secondary span {
+    text-decoration: underline;
+}
