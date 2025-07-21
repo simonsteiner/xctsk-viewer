@@ -2,7 +2,8 @@
 
 import os
 
-from flask import Blueprint, send_from_directory
+import requests
+from flask import Blueprint, Response, send_from_directory
 
 static_bp = Blueprint("static_routes", __name__)
 
@@ -55,3 +56,25 @@ def favicon_32():
 def site_webmanifest():
     """Serve the site web manifest file."""
     return _serve_static_file("site.webmanifest", "application/manifest+json")
+
+
+@static_bp.route("/stats.js")
+def stats_js():
+    """Proxy the Umami tracking script."""
+    try:
+        response = requests.get("https://cloud.umami.is/script.js", timeout=10)
+        response.raise_for_status()
+
+        return Response(
+            response.text,
+            mimetype="application/javascript",
+            headers={
+                "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
+                "Content-Type": "application/javascript",
+            },
+        )
+    except requests.RequestException:
+        # Return empty script if proxy fails
+        return Response(
+            "// Umami tracking script unavailable", mimetype="application/javascript"
+        )

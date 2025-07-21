@@ -31,7 +31,7 @@ block content %}
                 </li>
                 <li class="mb-2">
                   <i class="fas fa-check text-success"></i>
-                  Real-time task visualization
+                  Task visualization
                 </li>
                 <li class="mb-2">
                   <i class="fas fa-check text-success"></i>
@@ -68,6 +68,7 @@ block content %}
               <ul>
                 <li>Python 3.8+</li>
                 <li>Flask web framework</li>
+                <li>Powered by <a href="https://github.com/simonsteiner/pyxctsk" data-umami-event="link-click" data-umami-event-source="about" data-umami-event-link="pyxctsk github" target="_blank" rel="noopener noreferrer">pyxctsk</a></li>
                 <li>XML parsing capabilities</li>
               </ul>
             </div>
@@ -80,6 +81,40 @@ block content %}
               </ul>
             </div>
           </div>
+          <div class="row">
+            <div class="col-md-6">
+              <h5>Analytics</h5>
+              <ul>
+                <li><a href="https://umami.is/" data-umami-event="link-click" data-umami-event-source="about" data-umami-event-link="umami analytics" target="_blank" rel="noopener noreferrer">Umami analytics</a></li>
+                <li>Privacy-focused tracking</li>
+                <li>Open-source solution</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h5>Hosting</h5>
+              <ul>
+                <li>Hosted on <a href="https://fly.io/" data-umami-event="link-click" data-umami-event-source="about" data-umami-event-link="fly.io" target="_blank" rel="noopener noreferrer">Fly.io</a></li>
+                <li>Global edge deployment</li>
+                <li>Docker containers</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card shadow mb-4">
+        <div class="card-body">
+          <h3 class="card-title">Powered by pyxctsk</h3>
+          <p class="card-text">
+            This application is powered by <a href="https://github.com/simonsteiner/pyxctsk" data-umami-event="link-click" data-umami-event-source="about" data-umami-event-link="pyxctsk github" target="_blank" rel="noopener noreferrer">pyxctsk</a>,
+            a Python implementation of XCTrack's task format for paragliding and hang gliding competitions.
+            This library enables parsing, manipulation, and visualization of XCTrack task files used to define competition routes.
+          </p>
+          <div class="text-center">
+            <a href="https://github.com/simonsteiner/pyxctsk" data-umami-event="link-click" data-umami-event-source="about" data-umami-event-link="pyxctsk github" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">
+              <i class="fab fa-github"></i> View pyxctsk on GitHub
+            </a>
+          </div>
         </div>
       </div>
 
@@ -89,7 +124,7 @@ block content %}
           <ol>
             <li class="mb-2">
               Navigate to the
-              <a href="{{ url_for('main.show_task_view') }}">Viewer</a> page
+              <a href="{{ url_for('main.show_task_view') }}" data-umami-event="link-click" data-umami-event-source="about" data-umami-event-link="viewer">Viewer</a> page
             </li>
             <li class="mb-2">
               Upload your XCTSK file using drag-and-drop or the file browser
@@ -107,9 +142,11 @@ block content %}
       <div class="text-center">
         <a
           href="{{ url_for('main.show_task_view') }}"
+          data-umami-event="link-click"
+          data-umami-event-source="about"
+          data-umami-event-link="start viewer"
           class="btn btn-primary btn-lg"
-        >
-          <i class="fas fa-rocket"></i> Start Using XCTSK Viewer
+        ><i class="fas fa-rocket"></i> Start Using XCTSK Viewer
         </a>
       </div>
     </div>

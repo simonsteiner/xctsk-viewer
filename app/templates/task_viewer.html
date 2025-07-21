@@ -12,13 +12,21 @@
                     <!-- Tab navigation -->
                     <ul class="nav nav-pills nav-fill mb-3" id="loadTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="code-tab" data-bs-toggle="pill" data-bs-target="#code-pane" type="button" role="tab">
-                                <i class="fas fa-code"></i> Enter Task Code
+                            <button class="nav-link active" id="code-tab"
+                                data-umami-event="tabview-link-click"
+                                data-umami-event-source="tabs"
+                                data-umami-event-link="enter task code"
+                                data-bs-toggle="pill" data-bs-target="#code-pane" type="button" role="tab"
+                            ><i class="fas fa-code"></i> Enter Task Code
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="upload-tab" data-bs-toggle="pill" data-bs-target="#upload-pane" type="button" role="tab">
-                                <i class="fas fa-upload"></i> Upload XCTSK File
+                            <button class="nav-link" id="upload-tab"
+                                data-umami-event="tabview-link-click"
+                                data-umami-event-source="tabs"
+                                data-umami-event-link="upload xctsk file"
+                                data-bs-toggle="pill" data-bs-target="#upload-pane" type="button" role="tab"
+                            ><i class="fas fa-upload"></i> Upload XCTSK File
                             </button>
                         </li>
                     </ul>
@@ -32,7 +40,10 @@
                                     class="d-inline-flex align-items-center gap-2">
                                     <input name="taskCode" class="form-control form-control-sm" style="width: 12em;"
                                         placeholder="Task code" value="{{ task_code if task_code and not is_upload else '' }}">
-                                    <button class="btn btn-success btn-sm">Load task</button>
+                                    <button class="btn btn-success btn-sm"
+                                        data-umami-event="load_task"
+                                        data-umami-event-source="tabs"
+                                    >Load task</button>
                                 </form>
                             </div>
                         </div>
@@ -42,8 +53,10 @@
                             <form method="post" action="/xctsk/upload" enctype="multipart/form-data" class="text-center">
                                 <div class="d-inline-flex align-items-center gap-2">
                                     <input type="file" name="xctsk_file" accept=".xctsk" class="form-control form-control-sm" style="width: 16em;" required>
-                                    <button type="submit" class="btn btn-success btn-sm">
-                                        <i class="fas fa-upload"></i> Upload
+                                    <button type="submit" class="btn btn-success btn-sm"
+                                        data-umami-event="upload_xctsk"
+                                        data-umami-event-source="tabs"
+                                    ><i class="fas fa-upload"></i> Upload
                                     </button>
                                 </div>
                                 <div class="form-text mt-1">
@@ -147,8 +160,12 @@
                              class="img-fluid mb-2 qrcode" 
                              alt="QR Code for {{ task_code }}" loading="lazy">
                         <div class="small mt-1">
-                            <a href="/api/qrcode_image/qrcode_{{ task_code }}.png" download="qrcode_{{ task_code }}.png" class="link-secondary">
-                                <i class="fas fa-download"></i> <span>QR Code image</span>
+                            <a href="/api/qrcode_image/qrcode_{{ task_code }}.png"
+                                data-umami-event="download_qr_code"
+                                data-umami-event-task-code="qrcode_{{ task_code }}.png"
+                                download="qrcode_{{ task_code }}.png"
+                                class="link-secondary"
+                            ><i class="fas fa-download"></i> <span>QR Code image</span>
                             </a>
                         </div>
                     </div>
@@ -163,14 +180,21 @@
                     {% else %}
                     <p class="card-text">Task code: <strong>{{ task_code }}</strong></p>
                     <div class="d-grid gap-2">
-                        <a class="btn btn-primary" href="https://tools.xcontest.org/api/xctsk/load/{{ task_code }}"
-                            download="task_{{ task_code }}.xctsk" role="button">
-                            <i class="fas fa-download"></i> Download .xctsk<br>(from tools.xcontest.org)
+                        <a class="btn btn-primary"
+                            href="https://tools.xcontest.org/api/xctsk/load/{{ task_code }}"
+                            data-umami-event="download_xctsk_from_xcontest"
+                            data-umami-event-task-code="task_{{ task_code }}.xctsk"
+                            download="task_{{ task_code }}.xctsk"
+                            role="button"
+                        ><i class="fas fa-download"></i> Download .xctsk<br>(from tools.xcontest.org)
                         </a>
                         <a class="btn btn-outline-secondary"
-                            href="https://tools.xcontest.org/xctsk/load?taskCode={{ task_code }}" target="_blank"
-                            role="button">
-                            <i class="fas fa-external-link-alt"></i> View on tools.xcontest.org
+                            href="https://tools.xcontest.org/xctsk/load?taskCode={{ task_code }}"
+                            data-umami-event="view_task_on_xcontest"
+                            data-umami-event-task-code="{{ task_code }}"
+                            target="_blank"
+                            role="button"
+                        ><i class="fas fa-external-link-alt"></i> View on tools.xcontest.org
                         </a>
                     </div>
                     {% endif %}
@@ -222,7 +246,10 @@
     <hr>
     {% if not is_upload %}
     <div class="alert alert-info" role="alert">
-        Task data is fetched from <a href="https://tools.xcontest.org/xctsk/" target="_blank">tools.xcontest.org</a>.
+        Task data is fetched from <a href="https://tools.xcontest.org/xctsk/"
+                                    data-umami-event="link-click"
+                                    data-umami-event-source="info"
+                                    data-umami-event-link="xcontest" target="_blank">tools.xcontest.org</a>.
         Distances may slightly differ from XCTrack.
     </div>
     {% endif %}
@@ -237,8 +264,11 @@
                 '</strong>"')|safe }}{% else %}The task "{{ task_code }}" could not be found.{% endif %}</p>
         <hr>
         <p class="mb-0">
-            <a href="{{ url_for('main.show_task_view') }}" class="btn btn-outline-danger">
-                <i class="fas fa-search"></i> Try another task
+            <a href="{{ url_for('main.show_task_view') }}"
+              data-umami-event="link-click"
+              data-umami-event-source="error_message"
+              data-umami-event-link="Try another task"  class="btn btn-outline-danger"
+            ><i class="fas fa-search"></i> Try another task
             </a>
         </p>
     </div>
@@ -271,7 +301,10 @@
         <hr>
         <p>
             You can create task codes on
-            <a href="https://tools.xcontest.org/xctsk/" target="_blank">tools.xcontest.org</a>.
+            <a href="https://tools.xcontest.org/xctsk/"
+              data-umami-event="link-click"
+              data-umami-event-source="instructions"
+              data-umami-event-link="xcontest" target="_blank">tools.xcontest.org</a>.
             Tasks loaded via code are fetched from there using the provided task code.<br>
             The displayed data is based on the XCTSK file content — please be aware that optimized distance calculations
             may slightly differ from those shown in XCTrack.

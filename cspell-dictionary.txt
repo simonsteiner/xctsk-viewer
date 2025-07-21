@@ -12,8 +12,10 @@ pyxctsk
 pyzbar
 simplekml
 superfly
+tabview
 turnpoint
 turnpoints
+umami
 wsgi
 xcontest
 xctask
