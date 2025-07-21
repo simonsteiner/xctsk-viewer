@@ -6,8 +6,31 @@ from flask import flash, render_template
 from werkzeug.utils import secure_filename
 
 from app.services import XCTSKService
+from app.utils.task_cache import get_task_cache
 
 logger = logging.getLogger(__name__)
+
+
+def cleanup_old_task_data_from_cache(max_items=10):
+    """Clean up old task data from cache to prevent it from growing too large.
+
+    Args:
+        max_items: Maximum number of task data items to keep in cache
+    """
+    cache = get_task_cache()
+
+    # First cleanup expired entries
+    expired_count = cache.cleanup_expired()
+    if expired_count > 0:
+        logger.info(f"Cleaned up {expired_count} expired task data items from cache")
+
+    # If still too many items, we'd need to implement LRU logic
+    # For now, the TTL-based expiration should be sufficient
+    current_size = cache.size()
+    if current_size > max_items:
+        logger.info(
+            f"Cache has {current_size} items, consider implementing LRU cleanup"
+        )
 
 
 def render_task_viewer(
@@ -91,6 +114,14 @@ def process_xctsk_task(task_code, xctsk_service=None):
                 )
 
         # Success case
+        # Store task data in cache
+        cache = get_task_cache()
+        cache_key = f"task_data_{task_code}"
+        cache.set(cache_key, task_data)
+
+        # Clean up old cache data to prevent bloat
+        cleanup_old_task_data_from_cache()
+
         return True, render_task_viewer(
             task_code=task_code, task_data=task_data, message=message
         )
@@ -127,6 +158,14 @@ def process_uploaded_xctsk_file(file_content, filename, xctsk_service=None):
         # Generate display name from filename
         secure_name = secure_filename(filename)
         task_display_name = secure_name.replace(".xctsk", "")
+
+        # Store task data in cache
+        cache = get_task_cache()
+        cache_key = f"task_data_{task_display_name}"
+        cache.set(cache_key, task_data)
+
+        # Clean up old cache data to prevent bloat
+        cleanup_old_task_data_from_cache()
 
         # Success case
         return True, render_task_viewer(

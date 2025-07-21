@@ -6,6 +6,7 @@ from flask import Blueprint, Response, jsonify
 from pyxctsk import generate_qrcode_image
 
 from app.services.xctsk_service import XCTSKService
+from app.utils.task_cache import get_task_cache
 
 api_bp = Blueprint("api", __name__)
 
@@ -27,15 +28,27 @@ def api_task_data(task_code):
     if not task_code or not task_code.strip():
         return jsonify({"error": "Invalid task code provided."}), 400
 
-    try:
-        service = XCTSKService()
-        task_data = service.get_task_data_by_code(task_code)
-        if not task_data:
-            return jsonify({"error": "Task not found or invalid."}), 404
-        return jsonify(task_data)
-    except Exception as e:
-        logger.error(f"Error fetching task data for API: {str(e)}")
-        return jsonify({"error": f"Error fetching task data: {str(e)}"}), 500
+    # Try to get task data from cache first
+    cache = get_task_cache()
+    cache_key = f"task_data_{task_code}"
+    task_data = cache.get(cache_key)
+
+    if not task_data:
+        # Fall back to fetching from service if not in cache
+        try:
+            service = XCTSKService()
+            task_data = service.get_task_data_by_code(task_code)
+            if task_data:
+                # Cache it for future requests
+                cache.set(cache_key, task_data)
+        except Exception as e:
+            logger.error(f"Error fetching task data for API: {str(e)}")
+            return jsonify({"error": f"Error fetching task data: {str(e)}"}), 500
+
+    if not task_data:
+        return jsonify({"error": "Task not found or invalid."}), 404
+
+    return jsonify(task_data)
 
 
 @api_bp.route("/api/qrcode_image/qrcode_<task_code>.png")
@@ -59,15 +72,25 @@ def qrcode_image(task_code: str) -> Response:
             mimetype="application/json",
         )
 
-    try:
-        service = XCTSKService()
-        task_data = service.get_task_data_by_code(task_code)
-    except Exception as e:
-        import traceback
+    # Try to get task data from cache first
+    cache = get_task_cache()
+    cache_key = f"task_data_{task_code}"
+    task_data = cache.get(cache_key)
 
-        return error_response(
-            f"Error fetching task data: {str(e)}", stacktrace=traceback.format_exc()
-        )
+    if not task_data:
+        # Fall back to fetching from service if not in cache
+        try:
+            service = XCTSKService()
+            task_data = service.get_task_data_by_code(task_code)
+            if task_data:
+                # Cache it for future requests
+                cache.set(cache_key, task_data)
+        except Exception as e:
+            import traceback
+
+            return error_response(
+                f"Error fetching task data: {str(e)}", stacktrace=traceback.format_exc()
+            )
 
     if not task_data:
         return error_response("Task not found or invalid.", status=404)
