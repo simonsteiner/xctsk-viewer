@@ -2,6 +2,7 @@
 
 import logging
 
+import umami  # type: ignore
 from flask import flash, render_template
 from werkzeug.utils import secure_filename
 
@@ -9,6 +10,12 @@ from app.services import XCTSKService
 from app.utils.task_cache import get_task_cache
 
 logger = logging.getLogger(__name__)
+
+
+# Initialize Umami analytics
+umami.set_url_base("https://cloud.umami.is")
+umami.set_website_id("7ef7e9b3-262d-4b26-b3ae-00248516d406")
+umami.set_hostname("xctsk-viewer.fly.dev")
 
 
 def cleanup_old_task_data_from_cache(max_items=10):
@@ -97,6 +104,18 @@ def process_xctsk_task(task_code, xctsk_service=None):
         xctsk_service = XCTSKService()
 
     try:
+        # Track the page view in Umami
+        umami.new_page_view(
+            page_title="Process XCTSK Task",
+            url="/server-side/process_xctsk_task",
+        )
+        # Track the event in Umami
+        umami.new_event(
+            event_name="process_xctsk_task",
+            url="/server-side/process_xctsk_task",
+            custom_data={"task_code": task_code},
+        )
+
         success, message, task_data, status_code = xctsk_service.load_and_process_task(
             task_code
         )
@@ -158,6 +177,18 @@ def process_uploaded_xctsk_file(file_content, filename, xctsk_service=None):
         # Generate display name from filename
         secure_name = secure_filename(filename)
         task_display_name = secure_name.replace(".xctsk", "")
+
+        # Track the page view in Umami
+        umami.new_page_view(
+            page_title="Process Uploaded XCTSK File",
+            url="/server-side/process_uploaded_xctsk_file",
+        )
+        # Track the event in Umami
+        umami.new_event(
+            event_name="process_uploaded_xctsk_file",
+            url="/server-side/process_uploaded_xctsk_file",
+            custom_data={"task_code": task_display_name},
+        )
 
         # Store task data in cache
         cache = get_task_cache()

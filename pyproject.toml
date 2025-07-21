@@ -27,6 +27,7 @@ dependencies = [
     "pyxctsk @ git+https://github.com/simonsteiner/pyxctsk",
     "qrcode[pil]>=8.2.0",
     "requests>=2.32.4",
+    "umami-analytics>=0.2.20",
 ]
 
 [project.optional-dependencies]
