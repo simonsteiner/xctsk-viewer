@@ -145,6 +145,43 @@
                 </dd>
                 {% endif %}
             </dl>
+            <div class="d-grid gap-2 col-6 mx-auto">
+                <a class="btn btn-outline-primary"
+                    href="https://tools.xcontest.org/api/xctsk/load/{{ task_code }}"
+                    data-umami-event="download_xctsk_from_xcontest"
+                    data-umami-event-task-code="task_{{ task_code }}.xctsk"
+                    download="task_{{ task_code }}.xctsk"
+                    role="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="right"
+                    title="Download task from tools.xcontest.org"
+                >
+                    <i class="fas fa-download"></i> Download .xctsk
+                </a>
+                <a class="btn btn-outline-primary"
+                    href="/api/kml/task_{{ task_code }}.kml"
+                    data-umami-event="download_kml"
+                    data-umami-event-task-code="task_{{ task_code }}.kml"
+                    download="task_{{ task_code }}.kml"
+                    role="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="right"
+                    title="Download KML for Google Earth or mapping tools"
+                >
+                    <i class="fas fa-globe"></i> Download .kml
+                </a>
+                <a class="btn btn-outline-secondary"
+                    href="https://tools.xcontest.org/xctsk/load?taskCode={{ task_code }}"
+                    data-umami-event="view_task_on_xcontest"
+                    data-umami-event-task-code="{{ task_code }}"
+                    target="_blank"
+                    role="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="right"
+                    title="View task on tools.xcontest.org"
+                ><i class="fas fa-external-link-alt"></i> View on xcontest.org
+                </a>
+            </div>
         </div>
         <div class="col-12 col-lg-5 text-center">
             <div class="card">
@@ -179,38 +216,6 @@
                     </div>
                     {% else %}
                     <p class="card-text">Task code: <strong>{{ task_code }}</strong></p>
-                    <div class="d-grid gap-2 col-6 mx-auto">
-                        <a class="btn btn-primary"
-                            href="https://tools.xcontest.org/api/xctsk/load/{{ task_code }}"
-                            data-umami-event="download_xctsk_from_xcontest"
-                            data-umami-event-task-code="task_{{ task_code }}.xctsk"
-                            download="task_{{ task_code }}.xctsk"
-                            role="button"
-                            data-bs-toggle="tooltip" 
-                            title="from tools.xcontest.org"
-                        >
-                            <i class="fas fa-download"></i> Download .xctsk
-                        </a>
-                        <a class="btn btn-outline-primary"
-                            href="/api/kml/task_{{ task_code }}.kml"
-                            data-umami-event="download_kml"
-                            data-umami-event-task-code="task_{{ task_code }}.kml"
-                            download="task_{{ task_code }}.kml"
-                            role="button"
-                            data-bs-toggle="tooltip"
-                            title="Download KML for Google Earth or mapping tools"
-                        >
-                            <i class="fas fa-globe"></i> Download .kml
-                        </a>
-                        <a class="btn btn-outline-secondary"
-                            href="https://tools.xcontest.org/xctsk/load?taskCode={{ task_code }}"
-                            data-umami-event="view_task_on_xcontest"
-                            data-umami-event-task-code="{{ task_code }}"
-                            target="_blank"
-                            role="button"
-                        ><i class="fas fa-external-link-alt"></i> View on xcontest.org
-                        </a>
-                    </div>
                     {% endif %}
                 </div>
             </div>
