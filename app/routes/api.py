@@ -1,6 +1,8 @@
 """API routes for XCTSK viewer (QR code, etc)."""
 
 import logging
+import traceback
+from io import BytesIO
 
 from flask import Blueprint, Response, jsonify, make_response
 from pyxctsk import generate_qrcode_image, task_to_kml
@@ -27,18 +29,17 @@ def error_response(message, status=500, stacktrace=None):
     )
 
 
-@api_bp.route("/api/xctsk/<task_code>", methods=["GET"])
-def api_task_data(task_code):
-    """API endpoint to fetch XCTSK task data as JSON for a given task code.
+def get_cached_task_data(task_code: str) -> tuple[dict | None, Response | None]:
+    """Get task data from cache or fetch from service.
 
     Args:
-        task_code (str): The unique code identifying the XCTSK task.
+        task_code: The task code to fetch data for
 
     Returns:
-        Response: JSON response containing the task data if found, or an error message with appropriate status code.
+        Tuple of (task_data, error_response). If task_data is None, error_response contains the error.
     """
     if not task_code or not task_code.strip():
-        return jsonify({"error": "Invalid task code provided."}), 400
+        return None, error_response("Invalid task code provided.", status=400)
 
     # Try to get task data from cache first
     cache = get_task_cache()
@@ -54,11 +55,33 @@ def api_task_data(task_code):
                 # Cache it for future requests
                 cache.set(cache_key, task_data)
         except Exception as e:
-            logger.error(f"Error fetching task data for API: {str(e)}")
-            return jsonify({"error": f"Error fetching task data: {str(e)}"}), 500
+            logger.error(f"Error fetching task data: {str(e)}")
+            return None, error_response(
+                f"Error fetching task data: {str(e)}", stacktrace=traceback.format_exc()
+            )
 
     if not task_data:
-        return jsonify({"error": "Task not found or invalid."}), 404
+        return None, error_response("Task not found or invalid.", status=404)
+
+    return task_data, None
+
+
+@api_bp.route("/api/xctsk/<task_code>", methods=["GET"])
+def api_task_data(task_code):
+    """API endpoint to fetch XCTSK task data as JSON for a given task code.
+
+    Args:
+        task_code (str): The unique code identifying the XCTSK task.
+
+    Returns:
+        Response: JSON response containing the task data if found, or an error message with appropriate status code.
+    """
+    task_data, error = get_cached_task_data(task_code)
+    if error:
+        return error
+
+    # At this point, task_data is guaranteed to be not None
+    assert task_data is not None
 
     return jsonify(task_data)
 
@@ -73,28 +96,12 @@ def qrcode_image(task_code: str) -> Response:
     Returns:
         Response: Flask response containing the PNG image of the QR code if successful, or a JSON error message with appropriate status code if not.
     """
-    # Try to get task data from cache first
-    cache = get_task_cache()
-    cache_key = f"task_data_{task_code}"
-    task_data = cache.get(cache_key)
+    task_data, error = get_cached_task_data(task_code)
+    if error:
+        return error
 
-    if not task_data:
-        # Fall back to fetching from service if not in cache
-        try:
-            service = XCTSKService()
-            task_data = service.get_task_data_by_code(task_code)
-            if task_data:
-                # Cache it for future requests
-                cache.set(cache_key, task_data)
-        except Exception as e:
-            import traceback
-
-            return error_response(
-                f"Error fetching task data: {str(e)}", stacktrace=traceback.format_exc()
-            )
-
-    if not task_data:
-        return error_response("Task not found or invalid.", status=404)
+    # At this point, task_data is guaranteed to be not None
+    assert task_data is not None
 
     task_name = task_data.get("name", f"task_{task_code}")
     if "qr_code" not in task_data:
@@ -105,8 +112,6 @@ def qrcode_image(task_code: str) -> Response:
 
     try:
         img = generate_qrcode_image(qr_string, size=512)
-        from io import BytesIO
-
         buf = BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)
@@ -116,8 +121,6 @@ def qrcode_image(task_code: str) -> Response:
             headers={"Content-Disposition": f"inline; filename={task_name}.png"},
         )
     except Exception as e:
-        import traceback
-
         return error_response(
             f"Error generating QR code image: {str(e)}",
             stacktrace=traceback.format_exc(),
@@ -134,31 +137,14 @@ def kml_download(task_code: str) -> Response:
     Returns:
         Response: Flask response containing the KML file if successful, or a JSON error message with appropriate status code if not.
     """
+    task_data, error = get_cached_task_data(task_code)
+    if error:
+        return error
+
+    # At this point, task_data is guaranteed to be not None
+    assert task_data is not None
+
     try:
-        # Try to get task data from cache first
-        cache = get_task_cache()
-        cache_key = f"task_data_{task_code}"
-        task_data = cache.get(cache_key)
-
-        if not task_data:
-            # Fall back to fetching from service if not in cache
-            try:
-                service = XCTSKService()
-                task_data = service.get_task_data_by_code(task_code)
-                if task_data:
-                    # Cache it for future requests
-                    cache.set(cache_key, task_data)
-            except Exception as e:
-                import traceback
-
-                return error_response(
-                    f"Error fetching task data: {str(e)}",
-                    stacktrace=traceback.format_exc(),
-                )
-
-        if not task_data:
-            return error_response("Task not found or invalid.", status=404)
-
         kml_str = task_to_kml(task_data.get("task"))  # type: ignore
         response = make_response(kml_str)
         response.mimetype = "application/vnd.google-earth.kml+xml"
@@ -167,8 +153,6 @@ def kml_download(task_code: str) -> Response:
         )
         return response
     except Exception as e:
-        import traceback
-
         return error_response(
             f"Error generating KML: {str(e)}", stacktrace=traceback.format_exc()
         )
