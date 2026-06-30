@@ -21,11 +21,15 @@ uv sync
 uv run lefthook install
 ```
 
-To update the locked `pyxctsk` revision to the latest from GitHub:
+The `pyxctsk` dependency is installed from [PyPI](https://pypi.org/project/pyxctsk/). To
+develop against the unreleased version from GitHub instead, install it on top of the
+synced environment:
 
 ```bash
-uv lock --upgrade-package pyxctsk
+uv pip install --reinstall "pyxctsk @ git+https://github.com/simonsteiner/pyxctsk"
 ```
+
+(Re-running `uv sync` restores the pinned PyPI release.)
 
 ### Running the Application
 

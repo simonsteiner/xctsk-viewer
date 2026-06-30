@@ -17,7 +17,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def error_response(message, status=500, stacktrace=None):
+def error_response(
+    message: str, status: int = 500, stacktrace: str | None = None
+) -> Response:
     """Generate a standardized error response."""
     body = {"error": message}
     if stacktrace:

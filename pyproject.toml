@@ -24,7 +24,7 @@ dependencies = [
     "flask>=3.1.1",
     "gunicorn>=23.0.0",
     "pillow>=11.3.0",
-    "pyxctsk @ git+https://github.com/simonsteiner/pyxctsk",
+    "pyxctsk>=0.4.1",
     "qrcode[pil]>=8.2.0",
     "requests>=2.32.4",
     "umami-analytics>=0.2.20",
@@ -40,8 +40,8 @@ dev = [
 [project.urls]
 Repository = "https://github.com/simonsteiner/xctsk-viewer"
 
-[tool.setuptools]
-packages = ["app"]
+[tool.setuptools.packages.find]
+include = ["app*"]
 
 [tool.ruff]
 line-length = 88

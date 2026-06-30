@@ -783,7 +783,7 @@ wheels = [
 [[package]]
 name = "pyxctsk"
 version = "0.4.1"
-source = { git = "https://github.com/simonsteiner/pyxctsk#48771e45f54b7693181f657c6e849412f096016c" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "geopy" },
@@ -794,6 +794,10 @@ dependencies = [
     { name = "scipy" },
     { name = "simplekml" },
     { name = "zxing-cpp" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/74/68/0c7c6e9e2cc169323d348a4c9c1b9700d3cb4396f459b04ec5ab7084ceb2/pyxctsk-0.4.1.tar.gz", hash = "sha256:2dc4c50287b7c045e56d004239ac4215882c26fd543ef63b2a11c5b9b7f59b2f", size = 67272, upload-time = "2026-06-29T23:21:17.208Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4d/ce/6038f3be0f111a2babf12691d44b43378577e03b33068c5514fefce398c1/pyxctsk-0.4.1-py3-none-any.whl", hash = "sha256:6cb583d54319c4102764d416efc3304be5a363f5b77391787a2d07ec7cf3f2f8", size = 50324, upload-time = "2026-06-29T23:21:15.994Z" },
 ]
 
 [[package]]
@@ -1000,7 +1004,7 @@ requires-dist = [
     { name = "flask", specifier = ">=3.1.1" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "pillow", specifier = ">=11.3.0" },
-    { name = "pyxctsk", git = "https://github.com/simonsteiner/pyxctsk" },
+    { name = "pyxctsk", specifier = ">=0.4.1" },
     { name = "qrcode", extras = ["pil"], specifier = ">=8.2.0" },
     { name = "requests", specifier = ">=2.32.4" },
     { name = "umami-analytics", specifier = ">=0.2.20" },

@@ -6,8 +6,8 @@ ENV PYTHONUNBUFFERED=1 \
     UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/usr/local
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# Install uv (pin the version for reproducible builds)
+COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /uvx /bin/
 
 WORKDIR /app
 
