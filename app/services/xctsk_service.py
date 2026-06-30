@@ -277,7 +277,9 @@ class XCTSKService:
         goal_type_value = (
             goal_type.value
             if goal_type and hasattr(goal_type, "value")
-            else str(goal_type) if goal_type else None
+            else str(goal_type)
+            if goal_type
+            else None
         )
 
         is_w_task = False

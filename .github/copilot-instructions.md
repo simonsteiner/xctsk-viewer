@@ -10,8 +10,8 @@
 
 ## Manual Execution & Environment
 - Assume all scripts/commands are run manually unless automation is **explicitly requested**.
-- Always use the local Python environment `.venv/bin/python` instead of `python` or `flask`.
-- Do not add new dependencies without updating `requirements.txt` and `pyproject.toml`.
+- This project uses [uv](https://docs.astral.sh/uv/) for dependency management. Run commands via `uv run ...` instead of calling `python` or `flask` directly.
+- Do not add new dependencies without updating `pyproject.toml`; run `uv lock` to refresh `uv.lock`.
 
 ## Project Architecture
 - **Flask app** for visualizing XCTSK files (paragliding competition tasks for XCTrack).
@@ -22,8 +22,9 @@
   - `templates/` and `static/`: Jinja2 HTML and static assets.
 
 ## Key Workflows
-- **Run locally:** `.venv/bin/python run.py` (Flask runs on port 8080).
-- **Install dependencies:** `pip install -e .` in an activated `.venv`.
+- **Run locally:** `uv run python run.py` (Flask runs on port 8080).
+- **Install dependencies:** `uv sync` (creates `.venv` automatically).
+- **Lint/format/type-check:** `uv run ruff check --fix .`, `uv run ruff format .`, `uv run mypy ...` (run automatically on commit via lefthook).
 - **Deploy:** Use Fly.io with `fly deploy` (see `fly.toml`). Dockerfile provided for container builds.
 - **Testing:** No formal test suite; manual testing via web UI and CLI tools from the `pyxctsk` package.
 

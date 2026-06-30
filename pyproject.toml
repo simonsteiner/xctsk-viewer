@@ -19,26 +19,42 @@ classifiers = [
     "Framework :: Flask",
 ]
 keywords = ["xctsk", "xctask", "paragliding", "visualization", "flask"]
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 dependencies = [
     "flask>=3.1.1",
     "gunicorn>=23.0.0",
     "pillow>=11.3.0",
-    "pyxctsk @ git+https://github.com/simonsteiner/pyxctsk",
+    "pyxctsk>=0.4.1",
     "qrcode[pil]>=8.2.0",
     "requests>=2.32.4",
     "umami-analytics>=0.2.20",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-    "black>=25.1.0",
-    "flake8>=7.3.0",
-    "isort>=6.0.1",
+    "lefthook>=1.12.2",
     "mypy>=1.16.1",
-    "pre_commit>=4.2.0",
-    "pydocstyle>=6.3.0",
+    "ruff>=0.12.2",
 ]
 
 [project.urls]
 Repository = "https://github.com/simonsteiner/xctsk-viewer"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+# E/F: pycodestyle + pyflakes (flake8), I: isort, D: pydocstyle
+select = ["E", "F", "I", "D"]
+# E501 (line too long) is handled by the formatter; E203 conflicts with it
+ignore = ["E501", "E203"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
