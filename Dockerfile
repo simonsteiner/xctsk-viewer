@@ -11,10 +11,6 @@ COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /uvx /bin/
 
 WORKDIR /app
 
-# git is required to install the pyxctsk dependency from GitHub
-RUN apt-get update && apt-get install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install dependencies first (better layer caching), excluding dev tools
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
