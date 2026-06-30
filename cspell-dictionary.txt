@@ -1,6 +1,10 @@
+astral
 cpus
 envrc
+evilmartians
 FLYCTL
+lefthook
+ruff
 forcelist
 htmlcov
 jsonify

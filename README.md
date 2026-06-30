@@ -8,32 +8,29 @@ This tool allows paragliding pilots, organizers, and enthusiasts to visualize XC
 
 ### Installation and Setup
 
+This project uses [uv](https://docs.astral.sh/uv/) for dependency management.
+
 ```bash
 # Clone and navigate to the project directory
 cd xctsk-viewer
 
-# Create and activate a virtual environment
-python3 -m venv .venv
-# (Optional) If Python 3.13 is installed, create virtual environment with:
-python3.13 -m venv .venv
+# Install dependencies (creates a .venv automatically) including dev tools
+uv sync
 
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+# Install the git hooks
+uv run lefthook install
+```
 
-# Install dependencies
-pip install --upgrade pip
-# Install the package in development mode
-pip install -e ".[dev]"
-# lock dependency versions for deployment
-pip freeze > requirements.txt
+To update the locked `pyxctsk` revision to the latest from GitHub:
 
-# Install the latest pyxctsk from GitHub
-.venv/bin/pip install --upgrade git+https://github.com/simonsteiner/pyxctsk
+```bash
+uv lock --upgrade-package pyxctsk
 ```
 
 ### Running the Application
 
 ```bash
-python run.py
+uv run python run.py
 ```
 
 ## Deployment
@@ -93,23 +90,25 @@ The application will be available at <http://localhost:8080>.
 
 ## Code Quality & Formatting
 
-To keep the codebase clean and consistent, use the following tools on the `app/` directory. You can run them manually, or automatically before each commit using pre-commit hooks:
+To keep the codebase clean and consistent, this project uses [Ruff](https://docs.astral.sh/ruff/) (linting + formatting, replacing flake8/isort/black/pydocstyle), [mypy](https://mypy-lang.org/) (type checking) and [cspell](https://cspell.org/) (spell checking). These run automatically before each commit via [lefthook](https://github.com/evilmartians/lefthook).
 
-### Pre-commit Hook Setup
+### Git Hook Setup
 
-1. Install pre-commit (once per machine): `pip install pre-commit`
-2. Install the hooks (once per clone): `pre-commit install`
-3. Now, every commit will automatically run:
+Install the hooks once per clone:
 
-   ```bash
-   flake8 app/ --extend-ignore E501, E203
-   mypy app/
-   isort app/
-   black app/
-   pydocstyle --convention=google app/
-   npx cspell app/
-   ```
+```bash
+uv run lefthook install
+```
 
-You can also run all hooks manually: `pre-commit run --all-files` or specific hooks `pre-commit run cspell --all-files`
+Every commit then runs Ruff, mypy and cspell on the staged files (see `lefthook.yml`).
+
+### Running the tools manually
+
+```bash
+uv run ruff check --fix .   # lint and autofix
+uv run ruff format .        # format
+uv run mypy --explicit-package-bases --config-file mypy.ini app
+npx cspell --config cspell.json "app/**"
+```
 
 If you need to skip hooks for a commit, use `git commit --no-verify`.

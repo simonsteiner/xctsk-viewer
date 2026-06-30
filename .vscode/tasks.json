@@ -4,8 +4,10 @@
 		{
 			"label": "Run Flask App",
 			"type": "shell",
-			"command": "/home/simon/git/xctsk-viewer/.venv/bin/python",
+			"command": "uv",
 			"args": [
+				"run",
+				"python",
 				"run.py"
 			],
 			"group": "build",
