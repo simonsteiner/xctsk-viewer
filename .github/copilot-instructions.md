@@ -26,7 +26,7 @@
 - **Install dependencies:** `uv sync` (creates `.venv` automatically).
 - **Lint/format/type-check:** `uv run ruff check --fix .`, `uv run ruff format .`, `uv run mypy ...` (run automatically on commit via lefthook).
 - **Deploy:** Use Fly.io with `fly deploy` (see `fly.toml`). Dockerfile provided for container builds.
-- **Testing:** No formal test suite; manual testing via web UI and CLI tools from the `pyxctsk` package.
+- **Testing:** `uv run pytest` runs the pytest suite in `tests/` (run automatically on push via lefthook). Fixtures live in `tests/conftest.py` and `tests/fixtures/`.
 
 ## Patterns & Conventions
 - Register new routes as blueprints in `app/routes/` and add to `create_app()` in `app/__init__.py`.

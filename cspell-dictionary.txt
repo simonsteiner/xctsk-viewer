@@ -34,3 +34,6 @@ xctask
 xctsk
 zxing
 zxingcpp
+conftest
+docstrings
+toggleable
