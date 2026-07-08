@@ -27,3 +27,9 @@ pre-commit:
       priority: 4
       glob: "*.{py,md,txt,toml,yml,yaml,json,cfg,ini}"
       run: npx --yes cspell --no-progress --no-must-find-files --config cspell.json {staged_files}
+
+pre-push:
+  commands:
+    pytest:
+      tags: backend test
+      run: uv run pytest
