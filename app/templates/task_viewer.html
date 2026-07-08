@@ -430,6 +430,54 @@
         line-height: 1.4;
         font-size: 0.85rem;
     }
+
+    /* Custom-airspace upload control */
+    .airspace-upload {
+        background: #fff;
+        padding: 10px 12px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-size: 12px;
+        max-width: 210px;
+    }
+
+    .airspace-upload .au-title {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .airspace-upload .au-file {
+        display: block;
+        width: 100%;
+        font-size: 11px;
+        margin-bottom: 6px;
+    }
+
+    .airspace-upload .au-reset {
+        width: 100%;
+        border: 1px solid #ced4da;
+        background: #f8f9fa;
+        border-radius: 4px;
+        padding: 3px 6px;
+        font-size: 11px;
+        cursor: pointer;
+    }
+
+    .airspace-upload .au-reset:hover {
+        background: #e9ecef;
+    }
+
+    .airspace-upload .au-status {
+        margin-top: 6px;
+        color: #198754;
+        line-height: 1.3;
+        word-break: break-word;
+    }
+
+    .airspace-upload .au-status.au-error {
+        color: #dc3545;
+    }
 </style>
 
 <!-- Leaflet JS -->
@@ -626,52 +674,151 @@
             onEachFeature: onEachAirspace
         });
 
-        // Build a legend from the class/colour pairs actually present in the data
+        // Legend built from the class/colour pairs present in the current data
         var legendItems = {};
-        var legend = L.control({ position: 'bottomright' });
-        legend.onAdd = function () {
-            var div = L.DomUtil.create('div', 'legend airspace-legend');
+        var legendDiv = null;
+        var legendVisible = false;
+
+        function buildLegendHTML() {
             var html = '<h6>Airspace Classes</h6>';
             Object.keys(legendItems).sort().forEach(function (cls) {
                 html += '<div class="legend-item"><div class="legend-color" style="background:'
                     + legendItems[cls] + '"></div><span>Class ' + cls + '</span></div>';
             });
-            div.innerHTML = html;
-            return div;
+            return html;
+        }
+
+        var legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function () {
+            legendDiv = L.DomUtil.create('div', 'legend airspace-legend');
+            legendDiv.innerHTML = buildLegendHTML();
+            return legendDiv;
         };
 
-        L.control.layers(null, { 'Airspace (CH)': airspaceLayer }, { collapsed: false }).addTo(map);
+        function renderLegend() {
+            if (legendVisible && legendDiv) legendDiv.innerHTML = buildLegendHTML();
+        }
+        function showLegend() {
+            if (!legendVisible) { legend.addTo(map); legendVisible = true; }
+            else { renderLegend(); }
+        }
+        function hideLegend() {
+            if (legendVisible) { legend.remove(); legendVisible = false; }
+        }
+
+        // Upload control: swap the active airspace dataset with a custom OpenAir file
+        var statusEl, fileInput, resetBtn;
+        var uploadControl = L.control({ position: 'topleft' });
+        uploadControl.onAdd = function () {
+            var div = L.DomUtil.create('div', 'airspace-upload leaflet-bar');
+            div.innerHTML =
+                '<label class="au-title">Custom airspace</label>'
+                + '<input type="file" class="au-file" accept=".txt,.air,.openair">'
+                + '<button type="button" class="au-reset">Reset to Switzerland</button>'
+                + '<div class="au-status"></div>';
+            L.DomEvent.disableClickPropagation(div);
+            L.DomEvent.disableScrollPropagation(div);
+            fileInput = div.querySelector('.au-file');
+            resetBtn = div.querySelector('.au-reset');
+            statusEl = div.querySelector('.au-status');
+            return div;
+        };
+        uploadControl.addTo(map);
+
+        function setStatus(msg, isError) {
+            if (!statusEl) return;
+            statusEl.textContent = msg || '';
+            statusEl.classList.toggle('au-error', !!isError);
+        }
+
+        L.control.layers(null, { 'Airspace': airspaceLayer }, { collapsed: false }).addTo(map);
         var loaded = false;
 
-        function loadAirspaces() {
-            if (loaded) return Promise.resolve();
-            loaded = true;
+        // Fetch /api/airspaces and (re)render the layer + legend.
+        // fit: when true, zoom the map to the airspace extent.
+        function loadAirspaces(fit) {
             return fetch('/api/airspaces')
                 .then(function (r) {
                     if (!r.ok) throw new Error('HTTP ' + r.status);
                     return r.json();
                 })
                 .then(function (data) {
+                    airspaceLayer.clearLayers();
                     airspaceLayer.addData(data);
+                    legendItems = {};
                     (data.features || []).forEach(function (f) {
                         var p = f.properties || {};
                         if (p.class && p.color) legendItems[p.class] = p.color;
                     });
-                })
-                .catch(function (err) {
-                    loaded = false;
-                    console.error('Failed to load airspaces:', err);
+                    loaded = true;
+                    renderLegend();
+                    if (fit && airspaceLayer.getBounds().isValid()) {
+                        map.fitBounds(airspaceLayer.getBounds(), { padding: [20, 20] });
+                    }
                 });
         }
 
-        // Load lazily the first time the layer is switched on
+        // Ensure the overlay is visible on the map (updates the layers-control checkbox)
+        function ensureVisible() {
+            if (!map.hasLayer(airspaceLayer)) map.addLayer(airspaceLayer);
+            showLegend();
+        }
+
+        // Toggle from the layers control: lazy-load the first time it is switched on
         map.on('overlayadd', function (e) {
             if (e.layer !== airspaceLayer) return;
-            loadAirspaces().then(function () { legend.addTo(map); });
+            showLegend();
+            if (!loaded) loadAirspaces(false).catch(function (err) {
+                console.error('Failed to load airspaces:', err);
+            });
         });
         map.on('overlayremove', function (e) {
-            if (e.layer === airspaceLayer) legend.remove();
+            if (e.layer === airspaceLayer) hideLegend();
         });
+
+        // Handle a custom airspace file upload
+        function onFileChosen() {
+            var file = fileInput.files && fileInput.files[0];
+            if (!file) return;
+            var fd = new FormData();
+            fd.append('file', file);
+            setStatus('Uploading ' + file.name + '…');
+            fetch('/api/airspaces/upload', { method: 'POST', body: fd })
+                .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+                .then(function (res) {
+                    if (!res.ok) { setStatus(res.body.error || 'Upload failed', true); return; }
+                    ensureVisible();
+                    return loadAirspaces(true).then(function () {
+                        setStatus('Loaded ' + res.body.count + ' airspaces from ' + res.body.filename);
+                    });
+                })
+                .catch(function (err) {
+                    console.error('Upload error:', err);
+                    setStatus('Upload error', true);
+                })
+                .finally(function () { if (fileInput) fileInput.value = ''; });
+        }
+
+        // Reset back to the bundled Switzerland dataset
+        function onReset() {
+            setStatus('Resetting…');
+            fetch('/api/airspaces/reset', { method: 'POST' })
+                .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+                .then(function (res) {
+                    if (!res.ok) { setStatus(res.body.error || 'Reset failed', true); return; }
+                    ensureVisible();
+                    return loadAirspaces(true).then(function () {
+                        setStatus('Reset to ' + res.body.filename);
+                    });
+                })
+                .catch(function (err) {
+                    console.error('Reset error:', err);
+                    setStatus('Reset error', true);
+                });
+        }
+
+        if (fileInput) fileInput.addEventListener('change', onFileChosen);
+        if (resetBtn) resetBtn.addEventListener('click', onReset);
     }
 
     // Initialize map when page loads
