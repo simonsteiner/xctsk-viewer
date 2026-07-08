@@ -24,3 +24,5 @@ wsgi
 xcontest
 xctask
 xctsk
+zxing
+zxingcpp
