@@ -113,6 +113,46 @@ class AirspaceService:
             traceback.print_exc()
             return False, str(e)
 
+    def load_from_raw_airspaces(self, raw_airspaces, source_name):
+        """Load airspace data from already-parsed raw airspace dicts.
+
+        Used for datasets that don't come from an OpenAir file (e.g. fetched
+        from the xcontest API and adapted to the raw-dict shape).
+
+        Args:
+            raw_airspaces (list): Raw airspace dicts for convert_raw_airspace.
+            source_name (str): Label shown as the current dataset name.
+
+        Returns:
+            tuple: (bool, str or None). True and None on success, False and an
+            error message on failure.
+        """
+        try:
+            self._cached_airspaces = [
+                convert_raw_airspace(raw_data) for raw_data in raw_airspaces
+            ]
+            self._cached_geojson = convert_airspace_to_geojson(
+                self._cached_airspaces, verbose=self.verbose
+            )
+            self._current_filename = source_name
+
+            if self.verbose:
+                print(
+                    f"Loaded {len(self._cached_airspaces)} airspaces from {source_name}"
+                )
+                print(
+                    f"Generated {len(self._cached_geojson['features'])} GeoJSON features"
+                )
+
+            return True, None
+
+        except Exception as e:
+            print(f"Error loading raw airspace data: {e}")
+            import traceback
+
+            traceback.print_exc()
+            return False, str(e)
+
     def reset_to_default(self):
         """Reset to default airspace data."""
         self._cached_airspaces = None

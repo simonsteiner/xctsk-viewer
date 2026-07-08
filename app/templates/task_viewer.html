@@ -454,6 +454,7 @@
         margin-bottom: 6px;
     }
 
+    .airspace-upload .au-comp,
     .airspace-upload .au-reset {
         width: 100%;
         border: 1px solid #ced4da;
@@ -462,10 +463,22 @@
         padding: 3px 6px;
         font-size: 11px;
         cursor: pointer;
+        margin-bottom: 4px;
     }
 
+    .airspace-upload .au-comp {
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+
+    .airspace-upload .au-comp:hover,
     .airspace-upload .au-reset:hover {
         background: #e9ecef;
+    }
+
+    .airspace-upload .au-comp:disabled {
+        opacity: 0.6;
+        cursor: default;
     }
 
     .airspace-upload .au-status {
@@ -706,19 +719,22 @@
             if (legendVisible) { legend.remove(); legendVisible = false; }
         }
 
-        // Upload control: swap the active airspace dataset with a custom OpenAir file
-        var statusEl, fileInput, resetBtn;
+        // Upload control: swap the active airspace dataset with a custom OpenAir
+        // file, the xcontest COMP CH layer, or reset to the bundled default.
+        var statusEl, fileInput, resetBtn, compBtn;
         var uploadControl = L.control({ position: 'topleft' });
         uploadControl.onAdd = function () {
             var div = L.DomUtil.create('div', 'airspace-upload leaflet-bar');
             div.innerHTML =
                 '<label class="au-title">Custom airspace</label>'
                 + '<input type="file" class="au-file" accept=".txt,.air,.openair">'
+                + '<button type="button" class="au-comp">Load COMP CH (xcontest)</button>'
                 + '<button type="button" class="au-reset">Reset to Switzerland</button>'
                 + '<div class="au-status"></div>';
             L.DomEvent.disableClickPropagation(div);
             L.DomEvent.disableScrollPropagation(div);
             fileInput = div.querySelector('.au-file');
+            compBtn = div.querySelector('.au-comp');
             resetBtn = div.querySelector('.au-reset');
             statusEl = div.querySelector('.au-status');
             return div;
@@ -817,7 +833,28 @@
                 });
         }
 
+        // Fetch the current COMP CH competition airspace from xcontest
+        function onLoadCompCh() {
+            if (compBtn) compBtn.disabled = true;
+            setStatus('Fetching COMP CH from xcontest…');
+            fetch('/api/airspaces/comp-ch', { method: 'POST' })
+                .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+                .then(function (res) {
+                    if (!res.ok) { setStatus(res.body.error || 'Fetch failed', true); return; }
+                    ensureVisible();
+                    return loadAirspaces(true).then(function () {
+                        setStatus('Loaded ' + res.body.count + ' airspaces from ' + res.body.filename);
+                    });
+                })
+                .catch(function (err) {
+                    console.error('COMP CH fetch error:', err);
+                    setStatus('Fetch error', true);
+                })
+                .finally(function () { if (compBtn) compBtn.disabled = false; });
+        }
+
         if (fileInput) fileInput.addEventListener('change', onFileChosen);
+        if (compBtn) compBtn.addEventListener('click', onLoadCompCh);
         if (resetBtn) resetBtn.addEventListener('click', onReset);
     }
 

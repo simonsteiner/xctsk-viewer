@@ -1,0 +1,42 @@
+{
+  "oaid": "1064",
+  "name": "Palz Open 2026",
+  "channame": "COMP CH",
+  "chanid": "80",
+  "airspaces": [
+    {
+      "airclass": "R",
+      "name": "CBA C 25 FW",
+      "lowerLimit": {"hfeet": 6500, "htype": "FL"},
+      "upperLimit": {"hfeet": 19500, "htype": "FL"},
+      "polygon": [
+        [47.74, 5.60],
+        [47.66, 6.00],
+        [47.46, 5.60],
+        [47.08, 5.60]
+      ]
+    },
+    {
+      "airclass": "P",
+      "name": "PROHIBITED ZONE",
+      "lowerLimit": {"hfeet": 0, "htype": "GND"},
+      "upperLimit": {"hfeet": 3000, "htype": "AMSL"},
+      "polygon": [
+        [46.9, 8.4],
+        [46.95, 8.5],
+        [46.8, 8.45]
+      ]
+    },
+    {
+      "airclass": "D",
+      "name": "CTR EXAMPLE",
+      "lowerLimit": {"hfeet": 500, "htype": "AGL"},
+      "upperLimit": {"hfeet": 9500, "htype": "AMSL"},
+      "polygon": [
+        [47.1, 7.5],
+        [47.2, 7.6],
+        [47.0, 7.55]
+      ]
+    }
+  ]
+}

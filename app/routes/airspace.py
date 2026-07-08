@@ -5,10 +5,12 @@ import os
 import tempfile
 import traceback
 
+import requests
 from flask import Blueprint, Response, jsonify, request
 from werkzeug.utils import secure_filename
 
 from app.services.airspace_service import get_airspace_service
+from app.services.xcontest_airspace import fetch_comp_ch
 from app.utils.file_utils import allowed_file, cleanup_temp_file
 
 airspace_bp = Blueprint("airspace", __name__)
@@ -136,4 +138,41 @@ def reset_airspaces() -> Response:
         )
     except Exception as e:
         logger.error(f"Error resetting airspace data: {e}")
+        return _error(str(e), trace=True)
+
+
+@airspace_bp.route("/api/airspaces/comp-ch", methods=["POST"])
+def load_comp_ch() -> Response:
+    """Fetch the current COMP CH competition airspace from xcontest.
+
+    Loads the public airspace.xcontest.org "COMP CH" channel as the active
+    dataset served by ``GET /api/airspaces``.
+
+    Returns:
+        Response: JSON with ``filename`` and ``count`` on success; 502 if the
+        upstream fetch fails, 500 on other errors.
+    """
+    try:
+        raw_airspaces, label = fetch_comp_ch()
+    except requests.RequestException as e:
+        logger.error(f"Error fetching COMP CH airspace: {e}")
+        return _error(f"Could not reach xcontest: {e}", status=502)
+    except ValueError as e:
+        return _error(str(e), status=502)
+
+    try:
+        service = get_airspace_service()
+        success, error_msg = service.load_from_raw_airspaces(raw_airspaces, label)
+        if not success:
+            return _error(f"Error loading COMP CH airspace: {error_msg}", status=500)
+
+        airspaces, _ = service.get_cached_data()
+        return jsonify(
+            {
+                "filename": service.get_current_filename(),
+                "count": len(airspaces or []),
+            }
+        )
+    except Exception as e:
+        logger.error(f"Error loading COMP CH airspace: {e}")
         return _error(str(e), trace=True)
