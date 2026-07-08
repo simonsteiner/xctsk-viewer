@@ -57,6 +57,16 @@ def test_circle_becomes_polygon_approximation():
     assert len(geom["coordinates"][0]) == 37
 
 
+def test_circle_accepts_list_form_centerpoint():
+    # centerpoint may also be given as [lat, lng]
+    airspace = Airspace(
+        name="C", class_="R", geom=CircleGeometry(centerpoint=[46.5, 8.2], radius=3.0)
+    )
+    geom = convert_airspace_to_geojson([airspace])["features"][0]["geometry"]
+    assert geom["type"] == "Polygon"
+    assert len(geom["coordinates"][0]) == 37
+
+
 def test_feature_properties_include_colour_and_bounds():
     airspace = Airspace(
         name="P",

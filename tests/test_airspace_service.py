@@ -12,6 +12,12 @@ def test_default_dataset_loads_switzerland():
     assert service.get_current_filename() == "Switzerland.txt"
 
 
+def test_current_filename_fallback_is_a_basename():
+    # Before anything is loaded the fallback must be a bare filename, not a path
+    service = AirspaceService()
+    assert service.get_current_filename() == "Switzerland.txt"
+
+
 def test_stats_report_total_and_classes():
     service = AirspaceService()
     stats = service.get_airspace_stats()

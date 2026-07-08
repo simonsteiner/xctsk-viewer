@@ -1,17 +1,15 @@
 """API routes for airspace data (OpenAir) in the xctsk-viewer app."""
 
 import logging
+import os
 import tempfile
 import traceback
 
 from flask import Blueprint, Response, jsonify, request
+from werkzeug.utils import secure_filename
 
 from app.services.airspace_service import get_airspace_service
-from app.utils.file_utils import (
-    allowed_file,
-    cleanup_temp_file,
-    get_secure_filepath,
-)
+from app.utils.file_utils import allowed_file, cleanup_temp_file
 
 airspace_bp = Blueprint("airspace", __name__)
 
@@ -92,7 +90,11 @@ def upload_airspaces() -> Response:
             status=400,
         )
 
-    filepath = get_secure_filepath(file.filename, tempfile.gettempdir())
+    # Write to a unique temp file so concurrent uploads with the same client
+    # filename can't overwrite one another; keep file.filename only for display.
+    suffix = os.path.splitext(secure_filename(file.filename))[1]
+    fd, filepath = tempfile.mkstemp(suffix=suffix)
+    os.close(fd)
     try:
         file.save(filepath)
         service = get_airspace_service()

@@ -30,7 +30,8 @@ class AirspaceService:
             self._cached_airspaces is None or self._current_filename != filepath
         ) and os.path.exists(filepath):
             try:
-                print(f"Loading airspace data from: {filepath}")
+                if self.verbose:
+                    print(f"Loading airspace data from: {filepath}")
 
                 # Use the openair library to parse the file (returns raw dictionary data)
                 raw_airspaces = parse_file(filepath)
@@ -46,16 +47,17 @@ class AirspaceService:
                     self._cached_airspaces, verbose=self.verbose
                 )
 
-                print(
-                    f"Loaded {len(self._cached_airspaces)} airspaces from {os.path.basename(filepath)}"
-                )
-                print(
-                    f"Generated {len(self._cached_geojson['features'])} GeoJSON features"
-                )
+                if self.verbose:
+                    print(
+                        f"Loaded {len(self._cached_airspaces)} airspaces from {os.path.basename(filepath)}"
+                    )
+                    print(
+                        f"Generated {len(self._cached_geojson['features'])} GeoJSON features"
+                    )
 
-                # Debug: Print first airspace structure
-                if self.verbose and self._cached_airspaces:
-                    self._print_debug_info()
+                    # Debug: Print first airspace structure
+                    if self._cached_airspaces:
+                        self._print_debug_info()
 
             except Exception as e:
                 print(f"Error loading airspace data: {e}")
@@ -77,7 +79,8 @@ class AirspaceService:
     def load_from_uploaded_file(self, filepath, original_filename):
         """Load airspace data from an uploaded file."""
         try:
-            print(f"Loading airspace data from uploaded file: {filepath}")
+            if self.verbose:
+                print(f"Loading airspace data from uploaded file: {filepath}")
             raw_airspaces = parse_file(filepath)
 
             # Convert raw data to typed Airspace objects
@@ -93,10 +96,13 @@ class AirspaceService:
             # Set current filename to the original filename for display
             self._current_filename = original_filename
 
-            print(
-                f"Loaded {len(self._cached_airspaces)} airspaces from {original_filename}"
-            )
-            print(f"Generated {len(self._cached_geojson['features'])} GeoJSON features")
+            if self.verbose:
+                print(
+                    f"Loaded {len(self._cached_airspaces)} airspaces from {original_filename}"
+                )
+                print(
+                    f"Generated {len(self._cached_geojson['features'])} GeoJSON features"
+                )
 
             return True, None
 
@@ -125,7 +131,7 @@ class AirspaceService:
         return (
             os.path.basename(self._current_filename)
             if self._current_filename
-            else "examples/Switzerland.txt"
+            else os.path.basename(get_default_airspace_path())
         )
 
     def get_airspace_stats(self):

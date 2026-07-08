@@ -133,9 +133,12 @@ def _process_polygon_geometry(geom, feature, verbose=False):
         if isinstance(segment, Point):
             coordinates.append([segment.lng, segment.lat])  # GeoJSON uses [lon, lat]
         elif isinstance(segment, (Arc, ArcSegment)):
-            # Log that we're skipping Arc/ArcSegment for now
-            print(f"    Skipping {type(segment).__name__} segment (not implemented)")
-        else:
+            # Arc/ArcSegment rendering is not implemented yet; skip them
+            if verbose:
+                print(
+                    f"    Skipping {type(segment).__name__} segment (not implemented)"
+                )
+        elif verbose:
             print(f"    Unknown segment type: {type(segment).__name__}")
 
     if verbose:
@@ -160,8 +163,21 @@ def _process_polygon_geometry(geom, feature, verbose=False):
         return {"type": "LineString", "coordinates": coordinates}
 
     else:
-        print(f"  ✗ Polygon has insufficient points ({len(coordinates)} < 2)")
+        if verbose:
+            print(f"  ✗ Polygon has insufficient points ({len(coordinates)} < 2)")
         return None
+
+
+def _centerpoint_lat_lng(centerpoint):
+    """Extract (lat, lng) from a circle centerpoint in dict or list form.
+
+    Returns (None, None) when the centerpoint is missing or malformed.
+    """
+    if isinstance(centerpoint, dict) and "lat" in centerpoint and "lng" in centerpoint:
+        return centerpoint["lat"], centerpoint["lng"]
+    if isinstance(centerpoint, (list, tuple)) and len(centerpoint) >= 2:
+        return centerpoint[0], centerpoint[1]
+    return None, None
 
 
 def _process_circle_geometry(geom, verbose=False):
@@ -171,14 +187,10 @@ def _process_circle_geometry(geom, verbose=False):
             f"  Processing circle with center {geom.centerpoint} and radius {geom.radius}"
         )
 
-    if (
-        geom.centerpoint
-        and "lat" in geom.centerpoint
-        and "lng" in geom.centerpoint
-        and geom.radius > 0
-    ):
-        center_lat, center_lng = geom.centerpoint["lat"], geom.centerpoint["lng"]
+    # centerpoint may be a {"lat", "lng"} dict (openair-rs-py) or a [lat, lng] list
+    center_lat, center_lng = _centerpoint_lat_lng(geom.centerpoint)
 
+    if center_lat is not None and center_lng is not None and geom.radius > 0:
         # Convert nautical miles to degrees (more precise calculation)
         radius_meters = nautical_miles_to_meters(geom.radius)
         radius_deg = radius_meters / 111320  # meters per degree at equator
@@ -223,7 +235,10 @@ def _handle_conversion_error(airspace_data, error):
 
 
 def _print_conversion_summary(skipped_reasons, features, verbose=False):
-    """Print summary of conversion results."""
+    """Print summary of conversion results (only when verbose)."""
+    if not verbose:
+        return
+
     if skipped_reasons:
         print("\nSkipped airspaces summary:")
         for reason, count in skipped_reasons.items():
