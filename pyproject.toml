@@ -35,6 +35,7 @@ dependencies = [
 dev = [
     "lefthook>=1.12.2",
     "mypy>=1.16.1",
+    "pytest>=8.4.1",
     "ruff>=0.12.2",
 ]
 
@@ -43,6 +44,9 @@ Repository = "https://github.com/simonsteiner/xctsk-viewer"
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 88
@@ -59,3 +63,7 @@ convention = "google"
 
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests don't need the full pydocstyle docstring conventions
+"tests/**" = ["D"]

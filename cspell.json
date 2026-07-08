@@ -1,6 +1,6 @@
 {
     "version": "0.2",
-    "ignorePaths": ["app/static/examples/**", "app/examples/**"],
+    "ignorePaths": ["app/static/examples/**", "app/examples/**", "tests/fixtures/**"],
     "dictionaryDefinitions": [
         {
             "name": "xctsk-viewer",

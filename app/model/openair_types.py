@@ -157,12 +157,14 @@ class CircleGeometry:
 
     Attributes:
         type (str): The geometry type, always 'Circle'.
-        centerpoint (Optional[List[float]]): Center point as [lat, lng].
+        centerpoint (Optional[Union[List[float], Dict[str, float]]]): Center
+            point, either as ``[lat, lng]`` or as ``{"lat": .., "lng": ..}``
+            (the openair-rs-py parser emits the dict form).
         radius (float): Radius in nautical miles.
     """
 
     type: str = "Circle"
-    centerpoint: Optional[List[float]] = None  # [lat, lng]
+    centerpoint: Optional[Union[List[float], Dict[str, float]]] = None
     radius: float = 0.0  # in nautical miles
 
     def __post_init__(self):

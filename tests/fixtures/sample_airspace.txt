@@ -1,0 +1,16 @@
+* Sample OpenAir airspace file used by the test-suite.
+AC D
+AN TEST CTR
+AL GND
+AH 5000 ft
+DP 46:57:13 N 008:27:52 E
+DP 46:57:46 N 008:30:41 E
+DP 46:55:00 N 008:29:00 E
+DP 46:54:00 N 008:26:00 E
+
+AC R
+AN TEST CIRCLE
+AL GND
+AH FL 130
+V X=46:50:00 N 008:20:00 E
+DC 3.0

@@ -1,5 +1,6 @@
 AMSL
 astral
+autouse
 cpus
 envrc
 evilmartians
@@ -18,6 +19,7 @@ pyzbar
 simplekml
 superfly
 tabview
+testpaths
 turnpoint
 turnpoints
 umami
