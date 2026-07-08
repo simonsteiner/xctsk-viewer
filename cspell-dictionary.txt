@@ -1,3 +1,4 @@
+AMSL
 astral
 cpus
 envrc

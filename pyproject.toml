@@ -23,6 +23,7 @@ requires-python = ">=3.12"
 dependencies = [
     "flask>=3.1.1",
     "gunicorn>=23.0.0",
+    "openair-rs-py>=0.1.4",
     "pillow>=11.3.0",
     "pyxctsk>=0.5.0",
     "qrcode[pil]>=8.2.0",
