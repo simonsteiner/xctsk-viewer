@@ -2,7 +2,7 @@
 
 A Python-based interactive visualization tool for viewing XCTSK files.
 
-This tool allows paragliding pilots, organizers, and enthusiasts to visualize XCTSK files—used to define competition tasks for XCTrack. Built with Python, the viewer provides an interactive map interface to inspect turnpoints, task types, and routes defined in XCTSK files, making it easier to review or debug tasks for competitions.
+This tool allows paragliding pilots, organizers, and enthusiasts to visualize XCTSK files—used to define competition tasks for XCTrack. Built with Python, the viewer provides an interactive map interface to inspect turnpoints, task types, and routes defined in XCTSK files, making it easier to review or debug tasks for competitions. An optional airspace overlay renders OpenAir airspace on the map, sourced from the bundled default, an uploaded file, or the live xcontest "COMP CH" competition layer.
 
 ## Quick Start
 
@@ -94,7 +94,7 @@ The application will be available at <http://localhost:8080>.
 
 ## Code Quality & Formatting
 
-To keep the codebase clean and consistent, this project uses [Ruff](https://docs.astral.sh/ruff/) (linting + formatting, replacing flake8/isort/black/pydocstyle), [mypy](https://mypy-lang.org/) (type checking) and [cspell](https://cspell.org/) (spell checking). These run automatically before each commit via [lefthook](https://github.com/evilmartians/lefthook).
+To keep the codebase clean and consistent, this project uses [Ruff](https://docs.astral.sh/ruff/) (linting + formatting, replacing flake8/isort/black/pydocstyle), [mypy](https://mypy-lang.org/) (type checking) and [cspell](https://cspell.org/) (spell checking). These run automatically before each commit via [lefthook](https://github.com/evilmartians/lefthook), which also runs the [pytest](https://docs.pytest.org/) suite before each push.
 
 ### Git Hook Setup
 
@@ -113,6 +113,7 @@ uv run ruff check --fix .   # lint and autofix
 uv run ruff format .        # format
 uv run mypy --explicit-package-bases --config-file mypy.ini app
 npx cspell --config cspell.json "app/**"
+uv run pytest               # run the test suite
 ```
 
-If you need to skip hooks for a commit, use `git commit --no-verify`.
+If you need to skip hooks for a commit, use `git commit --no-verify` (or `git push --no-verify` for the pre-push tests).
