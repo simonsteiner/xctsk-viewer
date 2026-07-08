@@ -85,6 +85,17 @@ def test_load_comp_ch(client, monkeypatch):
     )
 
 
+def test_errors_do_not_leak_stacktrace_outside_debug(client, monkeypatch):
+    def boom():
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(airspace_routes, "get_airspace_service", boom)
+    resp = client.get("/api/airspaces")
+    assert resp.status_code == 500
+    # no Python traceback is exposed to clients when not in debug mode
+    assert "stacktrace" not in resp.get_json()
+
+
 def test_load_comp_ch_upstream_failure_returns_502(client, monkeypatch):
     def boom():
         raise requests.RequestException("connection refused")

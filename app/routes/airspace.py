@@ -6,7 +6,7 @@ import tempfile
 import traceback
 
 import requests
-from flask import Blueprint, Response, jsonify, request
+from flask import Blueprint, Response, current_app, jsonify, request
 from werkzeug.utils import secure_filename
 
 from app.services.airspace_service import get_airspace_service
@@ -22,9 +22,13 @@ ALLOWED_AIRSPACE_EXTENSIONS = {"txt", "air", "openair"}
 
 
 def _error(message: str, status: int = 500, trace: bool = False) -> Response:
-    """Build a standardized JSON error response."""
+    """Build a standardized JSON error response.
+
+    A stacktrace is only included when explicitly requested *and* the app is
+    running in debug mode, so internal details never leak in production.
+    """
     body = {"error": message}
-    if trace:
+    if trace and current_app.debug:
         body["stacktrace"] = traceback.format_exc()
     return Response(
         jsonify(body).get_data(as_text=False),

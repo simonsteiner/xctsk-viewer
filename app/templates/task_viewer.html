@@ -653,6 +653,18 @@
         var defaultWeight = 2;
         var highlightWeight = 5;
 
+        // Airspace properties come from untrusted data (uploaded OpenAir files
+        // and the xcontest API), so escape everything before building markup.
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+        // Only allow simple hex colours in style attributes; fall back to grey.
+        function safeColor(value) {
+            return /^#[0-9a-fA-F]{3,8}$/.test(value || '') ? value : '#999999';
+        }
+
         // Style airspace features from the colour supplied in their properties
         function airspaceStyle(feature) {
             var color = (feature.properties && feature.properties.color) || '#999999';
@@ -670,10 +682,10 @@
         // colouring the class badge from the per-feature colour.
         function airspaceInfoHTML(p) {
             return '<div>'
-                + '<span class="airspace-class" style="background:' + (p.color || '#999999') + '">'
-                + (p.name || 'Airspace') + ' &middot; Class ' + (p.class || '?') + '</span>'
-                + '<div class="airspace-bounds"><strong>Lower:</strong> ' + (p.lowerBound || '?')
-                + '<br><strong>Upper:</strong> ' + (p.upperBound || '?') + '</div></div>';
+                + '<span class="airspace-class" style="background:' + safeColor(p.color) + '">'
+                + escapeHtml(p.name || 'Airspace') + ' &middot; Class ' + escapeHtml(p.class || '?') + '</span>'
+                + '<div class="airspace-bounds"><strong>Lower:</strong> ' + escapeHtml(p.lowerBound || '?')
+                + '<br><strong>Upper:</strong> ' + escapeHtml(p.upperBound || '?') + '</div></div>';
         }
 
         function onEachAirspace(feature, layer) {
@@ -696,7 +708,7 @@
             var html = '<h6>Airspace Classes</h6>';
             Object.keys(legendItems).sort().forEach(function (cls) {
                 html += '<div class="legend-item"><div class="legend-color" style="background:'
-                    + legendItems[cls] + '"></div><span>Class ' + cls + '</span></div>';
+                    + safeColor(legendItems[cls]) + '"></div><span>Class ' + escapeHtml(cls) + '</span></div>';
             });
             return html;
         }
