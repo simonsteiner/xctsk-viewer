@@ -382,6 +382,54 @@
     .leaflet-control-zoom a:hover {
         background-color: #f8f9fa;
     }
+
+    /* Airspace overlay legend (adapted from the airspace-viewer project) */
+    .airspace-legend {
+        background: #fff;
+        padding: 12px 14px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        max-height: 320px;
+        overflow-y: auto;
+        font-size: 13px;
+        line-height: 1.3;
+    }
+
+    .airspace-legend h6 {
+        margin: 0 0 8px;
+        font-weight: 600;
+    }
+
+    .airspace-legend .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .airspace-legend .legend-color {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+    }
+
+    /* Airspace popup badge + bounds */
+    .airspace-class {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 8px;
+    }
+
+    .airspace-bounds {
+        color: #555;
+        line-height: 1.4;
+        font-size: 0.85rem;
+    }
 </style>
 
 <!-- Leaflet JS -->
@@ -532,6 +580,98 @@
         } else {
             console.warn('No valid bounds found, using default view');
         }
+
+        // Add the airspace overlay (lazy-loaded, toggleable)
+        addAirspaceOverlay(map);
+    }
+
+    // Fetch airspace GeoJSON and expose it as a toggleable Leaflet overlay.
+    // Colouring, class-badge popups, hover highlight and legend follow the
+    // airspace-viewer project; adapted here to a lazy-loaded secondary overlay.
+    function addAirspaceOverlay(map) {
+        var defaultWeight = 2;
+        var highlightWeight = 5;
+
+        // Style airspace features from the colour supplied in their properties
+        function airspaceStyle(feature) {
+            var color = (feature.properties && feature.properties.color) || '#999999';
+            var isLine = feature.geometry && feature.geometry.type === 'LineString';
+            return {
+                color: color,
+                weight: isLine ? 3 : defaultWeight,
+                opacity: 0.6,
+                fillColor: color,
+                fillOpacity: isLine ? 0 : 0.35
+            };
+        }
+
+        // Popup markup mirrors airspace-viewer's generateAirspaceInfoHTML,
+        // colouring the class badge from the per-feature colour.
+        function airspaceInfoHTML(p) {
+            return '<div>'
+                + '<span class="airspace-class" style="background:' + (p.color || '#999999') + '">'
+                + (p.name || 'Airspace') + ' &middot; Class ' + (p.class || '?') + '</span>'
+                + '<div class="airspace-bounds"><strong>Lower:</strong> ' + (p.lowerBound || '?')
+                + '<br><strong>Upper:</strong> ' + (p.upperBound || '?') + '</div></div>';
+        }
+
+        function onEachAirspace(feature, layer) {
+            layer.bindPopup(airspaceInfoHTML(feature.properties || {}));
+            layer.on('mouseover', function () { layer.setStyle({ weight: highlightWeight }); });
+            layer.on('mouseout', function () { layer.setStyle({ weight: airspaceStyle(feature).weight }); });
+        }
+
+        var airspaceLayer = L.geoJSON(null, {
+            style: airspaceStyle,
+            onEachFeature: onEachAirspace
+        });
+
+        // Build a legend from the class/colour pairs actually present in the data
+        var legendItems = {};
+        var legend = L.control({ position: 'bottomright' });
+        legend.onAdd = function () {
+            var div = L.DomUtil.create('div', 'legend airspace-legend');
+            var html = '<h6>Airspace Classes</h6>';
+            Object.keys(legendItems).sort().forEach(function (cls) {
+                html += '<div class="legend-item"><div class="legend-color" style="background:'
+                    + legendItems[cls] + '"></div><span>Class ' + cls + '</span></div>';
+            });
+            div.innerHTML = html;
+            return div;
+        };
+
+        L.control.layers(null, { 'Airspace (CH)': airspaceLayer }, { collapsed: false }).addTo(map);
+        var loaded = false;
+
+        function loadAirspaces() {
+            if (loaded) return Promise.resolve();
+            loaded = true;
+            return fetch('/api/airspaces')
+                .then(function (r) {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
+                .then(function (data) {
+                    airspaceLayer.addData(data);
+                    (data.features || []).forEach(function (f) {
+                        var p = f.properties || {};
+                        if (p.class && p.color) legendItems[p.class] = p.color;
+                    });
+                })
+                .catch(function (err) {
+                    loaded = false;
+                    console.error('Failed to load airspaces:', err);
+                });
+        }
+
+        // Load lazily the first time the layer is switched on
+        map.on('overlayadd', function (e) {
+            if (e.layer !== airspaceLayer) return;
+            loadAirspaces().then(function () { legend.addTo(map); });
+        });
+        map.on('overlayremove', function (e) {
+            if (e.layer === airspaceLayer) legend.remove();
+        });
     }
 
     // Initialize map when page loads
