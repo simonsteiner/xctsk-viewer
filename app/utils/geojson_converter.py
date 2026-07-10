@@ -32,6 +32,60 @@ def altitude_to_text(altitude):
         return str(altitude)
 
 
+def altitude_to_numeric(altitude):
+    """Convert an altitude object or dictionary to numeric meters plus a reference.
+
+    Args:
+        altitude: The Altitude object, raw dictionary, or value to convert.
+
+    Returns:
+        dict: {"meters": float | None, "ref": str} where ref is one of
+            "AMSL", "AGL", "FL", "UNLIMITED" or "UNKNOWN". Flight levels are
+            converted assuming standard atmosphere (FL x = x * 100 ft AMSL).
+            "meters" is None when no numeric value can be derived
+            (unlimited or unparseable altitudes).
+    """
+    from app.model.openair_types import Altitude, AltitudeType
+    from app.utils.units import feet_to_meters
+
+    if isinstance(altitude, dict):
+        alt_type_str = altitude.get("type", "Gnd")
+        try:
+            alt_type = AltitudeType(alt_type_str)
+        except ValueError:
+            alt_type = AltitudeType.OTHER
+        altitude = Altitude(type=alt_type, val=altitude.get("val"))
+
+    if not isinstance(altitude, Altitude):
+        return {"meters": None, "ref": "UNKNOWN"}
+
+    def numeric_val():
+        try:
+            return float(altitude.val)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return None
+
+    if altitude.type == AltitudeType.GND:
+        return {"meters": 0.0, "ref": "AGL"}
+    elif altitude.type == AltitudeType.FEET_AMSL:
+        val = numeric_val()
+        meters = round(feet_to_meters(val), 1) if val is not None else 0.0
+        return {"meters": meters, "ref": "AMSL"}
+    elif altitude.type == AltitudeType.FEET_AGL:
+        val = numeric_val()
+        meters = round(feet_to_meters(val), 1) if val is not None else 0.0
+        return {"meters": meters, "ref": "AGL"}
+    elif altitude.type == AltitudeType.FLIGHT_LEVEL:
+        val = numeric_val()
+        if val is None:
+            return {"meters": None, "ref": "FL"}
+        return {"meters": round(feet_to_meters(val * 100), 1), "ref": "FL"}
+    elif altitude.type == AltitudeType.UNLIMITED:
+        return {"meters": None, "ref": "UNLIMITED"}
+    else:
+        return {"meters": None, "ref": "UNKNOWN"}
+
+
 def convert_airspace_to_geojson(airspaces, verbose=False):
     """Convert airspace data to GeoJSON format for mapping."""
     features = []
@@ -88,6 +142,8 @@ def _create_geojson_feature(airspace, verbose=False):
     airspace_class = airspace.airspace_class
     lower_bound = altitude_to_text(airspace.lower_bound)
     upper_bound = altitude_to_text(airspace.upper_bound)
+    lower_numeric = altitude_to_numeric(airspace.lower_bound)
+    upper_numeric = altitude_to_numeric(airspace.upper_bound)
 
     if verbose:
         print(
@@ -101,6 +157,10 @@ def _create_geojson_feature(airspace, verbose=False):
             "class": airspace_class,
             "lowerBound": lower_bound,
             "upperBound": upper_bound,
+            "lowerMeters": lower_numeric["meters"],
+            "lowerRef": lower_numeric["ref"],
+            "upperMeters": upper_numeric["meters"],
+            "upperRef": upper_numeric["ref"],
             "description": f"{name} ({airspace_class})",
             "color": get_airspace_color(airspace_class),
         },
