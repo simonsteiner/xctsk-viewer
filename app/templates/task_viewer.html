@@ -275,7 +275,11 @@
     {% endif %}
 
     <!-- Map container -->
-    <div id="map" style="height:600px; border-radius: 8px; border: 1px solid #dee2e6;" class="mt-4"></div>
+    <div class="map-wrap mt-4" style="position:relative;">
+        <div id="map" style="height:600px; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+        <!-- Airspace side view panel (hidden by default) -->
+        <div id="sideview" class="hidden"></div>
+    </div>
     {% elif task_code %}
     <div class="alert alert-danger" role="alert">
         <h4 class="alert-heading">Task not found!</h4>
@@ -491,6 +495,261 @@
     .airspace-upload .au-status.au-error {
         color: #dc3545;
     }
+
+    /* Stacked airspace popup (all airspaces at the clicked point) */
+    .stacked-popup {
+        max-height: 300px;
+        overflow-y: auto;
+        min-width: 240px;
+    }
+
+    .stacked-title {
+        font-weight: bold;
+        font-size: 13px;
+        margin-bottom: 6px;
+        color: #333;
+    }
+
+    .stacked-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 5px 4px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .stacked-item:hover {
+        background: rgba(0, 0, 0, 0.06);
+    }
+
+    .stacked-item + .stacked-item {
+        border-top: 1px solid #eee;
+    }
+
+    .stacked-color {
+        flex: 0 0 auto;
+        width: 12px;
+        height: 12px;
+        margin-top: 3px;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+    }
+
+    .stacked-text {
+        min-width: 0;
+    }
+
+    .stacked-name {
+        font-weight: 600;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .stacked-bounds {
+        font-size: 12px;
+        color: #666;
+        line-height: 1.3;
+    }
+
+    /* Side view mode toggle button (Leaflet control) */
+    .side-view-toggle {
+        font-size: 18px;
+        line-height: 30px !important;
+        text-align: center;
+    }
+
+    .side-view-toggle.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+    }
+
+    .side-view-cursor {
+        cursor: crosshair !important;
+    }
+
+    /* Side view panel */
+    #sideview {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 480px;
+        max-width: calc(100% - 20px);
+        max-height: calc(100% - 20px);
+        overflow-y: auto;
+        background: white;
+        padding: 12px 15px 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        z-index: 1200;
+        font-size: 13px;
+    }
+
+    #sideview.hidden {
+        display: none;
+    }
+
+    .sideview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .sideview-coords,
+    .sideview-ground-info {
+        color: #666;
+        font-size: 12px;
+        margin-left: 8px;
+    }
+
+    .sideview-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        color: #666;
+        padding: 0 2px;
+    }
+
+    .sideview-close:hover {
+        color: #000;
+    }
+
+    .sideview-note {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        color: #856404;
+        border-radius: 4px;
+        padding: 5px 8px;
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .sideview-svg {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .sideview-sky {
+        fill: #eaf4fb;
+    }
+
+    .sideview-grid {
+        stroke: rgba(0, 0, 0, 0.08);
+        stroke-width: 1;
+    }
+
+    .sideview-axis {
+        stroke: #999;
+        stroke-width: 1;
+    }
+
+    .sideview-tick {
+        font-size: 10px;
+        fill: #666;
+    }
+
+    .sideview-axis-label {
+        font-size: 10px;
+        fill: #666;
+    }
+
+    .sideview-ground {
+        fill: #a08256;
+        fill-opacity: 0.55;
+    }
+
+    .sideview-ground-line {
+        stroke: #6d5535;
+        stroke-width: 2;
+    }
+
+    .sideview-ground-label {
+        font-size: 10px;
+        fill: #4d3b23;
+        font-weight: bold;
+    }
+
+    .sideview-bar {
+        cursor: help;
+    }
+
+    .sideview-badge {
+        font-size: 10px;
+        fill: white;
+        font-weight: bold;
+    }
+
+    .sideview-unlimited {
+        font-size: 13px;
+        fill: #555;
+    }
+
+    .sideview-list {
+        margin-top: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .sideview-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 4px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .sideview-item:hover {
+        background: rgba(0, 0, 0, 0.06);
+    }
+
+    .sideview-item + .sideview-item {
+        border-top: 1px solid #eee;
+    }
+
+    .sideview-item-badge {
+        flex: 0 0 auto;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1px;
+    }
+
+    .sideview-class {
+        font-weight: normal;
+        color: #666;
+        font-size: 12px;
+    }
+
+    .sideview-resolved {
+        color: #999;
+    }
+
+    .sideview-empty {
+        color: #666;
+        padding: 6px 2px;
+    }
+
+    @media (max-width: 768px) {
+        #sideview {
+            top: 5px;
+            right: 5px;
+            left: 5px;
+            width: auto;
+            background: rgba(255, 255, 255, 0.97);
+        }
+    }
 </style>
 
 <!-- Leaflet JS -->
@@ -678,18 +937,11 @@
             };
         }
 
-        // Popup markup mirrors airspace-viewer's generateAirspaceInfoHTML,
-        // colouring the class badge from the per-feature colour.
-        function airspaceInfoHTML(p) {
-            return '<div>'
-                + '<span class="airspace-class" style="background:' + safeColor(p.color) + '">'
-                + escapeHtml(p.name || 'Airspace') + ' &middot; Class ' + escapeHtml(p.class || '?') + '</span>'
-                + '<div class="airspace-bounds"><strong>Lower:</strong> ' + escapeHtml(p.lowerBound || '?')
-                + '<br><strong>Upper:</strong> ' + escapeHtml(p.upperBound || '?') + '</div></div>';
-        }
-
+        // Clicks are handled on the map itself (stacked popup of every airspace
+        // at the clicked point), so features only wire up the hover highlight
+        // and keep a feature -> layer link for zooming from the popup list.
         function onEachAirspace(feature, layer) {
-            layer.bindPopup(airspaceInfoHTML(feature.properties || {}));
+            feature._layer = layer;
             layer.on('mouseover', function () { layer.setStyle({ weight: highlightWeight }); });
             layer.on('mouseout', function () { layer.setStyle({ weight: airspaceStyle(feature).weight }); });
         }
@@ -761,6 +1013,7 @@
 
         L.control.layers(null, { 'Airspace': airspaceLayer }, { collapsed: false }).addTo(map);
         var loaded = false;
+        var airspaceData = null; // latest GeoJSON, used for point lookups
 
         // Fetch /api/airspaces and (re)render the layer + legend.
         // fit: when true, zoom the map to the airspace extent.
@@ -771,6 +1024,8 @@
                     return r.json();
                 })
                 .then(function (data) {
+                    airspaceData = data;
+                    (data.features || []).forEach(function (f, i) { f._idx = i; });
                     airspaceLayer.clearLayers();
                     airspaceLayer.addData(data);
                     legendItems = {};
@@ -868,6 +1123,345 @@
         if (fileInput) fileInput.addEventListener('change', onFileChosen);
         if (compBtn) compBtn.addEventListener('click', onLoadCompCh);
         if (resetBtn) resetBtn.addEventListener('click', onReset);
+
+        // ---- Stacked airspace lookup (all airspaces at a clicked point) ----
+
+        // Ray casting on a GeoJSON ring ([lng, lat] pairs)
+        function pointInRing(lng, lat, ring) {
+            var inside = false;
+            for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+                var xi = ring[i][0], yi = ring[i][1];
+                var xj = ring[j][0], yj = ring[j][1];
+                if (((yi > lat) !== (yj > lat)) &&
+                    (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)) {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+
+        function featureContainsPoint(feature, latlng) {
+            if (!feature.geometry || feature.geometry.type !== 'Polygon') return false;
+            var rings = feature.geometry.coordinates;
+            if (!rings.length || !pointInRing(latlng.lng, latlng.lat, rings[0])) return false;
+            // Point must not fall into a hole
+            for (var i = 1; i < rings.length; i++) {
+                if (pointInRing(latlng.lng, latlng.lat, rings[i])) return false;
+            }
+            return true;
+        }
+
+        function findAirspacesAtPoint(latlng) {
+            if (!airspaceData || !airspaceData.features) return [];
+            return airspaceData.features.filter(function (f) { return featureContainsPoint(f, latlng); });
+        }
+
+        // Resolve a bound to meters AMSL for sorting/plotting.
+        // AGL bounds are offset by the ground elevation when known.
+        function resolveAltitudeMeters(meters, ref, groundElevation) {
+            if (meters === null || meters === undefined) return null; // unlimited/unknown
+            if (ref === 'AGL') return (groundElevation || 0) + meters;
+            return meters; // AMSL or FL (standard atmosphere approximation)
+        }
+
+        function sortKeyLower(props) {
+            var v = resolveAltitudeMeters(props.lowerMeters, props.lowerRef, 0);
+            return v === null ? 0 : v;
+        }
+
+        // Zoom to an airspace feature from popup/side-view list markup
+        window.zoomToAirspaceFeature = function (idx) {
+            var feature = airspaceData && airspaceData.features[idx];
+            if (feature && feature._layer) {
+                map.closePopup();
+                map.fitBounds(feature._layer.getBounds());
+            }
+        };
+
+        function generateStackedListHTML(features) {
+            // Highest floor first, so the list reads like the vertical stack
+            var sorted = features.slice().sort(function (a, b) {
+                return sortKeyLower(b.properties) - sortKeyLower(a.properties);
+            });
+
+            var items = sorted.map(function (feature) {
+                var p = feature.properties;
+                return '<div class="stacked-item" onclick="zoomToAirspaceFeature(' + feature._idx + ')" title="Zoom to airspace">'
+                    + '<span class="stacked-color" style="background:' + safeColor(p.color) + '"></span>'
+                    + '<div class="stacked-text">'
+                    + '<div class="stacked-name">' + escapeHtml(p.name || 'Airspace') + '</div>'
+                    + '<div class="stacked-bounds">Class ' + escapeHtml(p.class || '?') + ' &middot; '
+                    + escapeHtml(p.lowerBound || '?') + ' &ndash; ' + escapeHtml(p.upperBound || '?') + '</div>'
+                    + '</div></div>';
+            }).join('');
+
+            return '<div class="stacked-popup">'
+                + '<div class="stacked-title">' + sorted.length + ' airspace' + (sorted.length !== 1 ? 's' : '') + ' at this point</div>'
+                + items + '</div>';
+        }
+
+        // Task-feature popups open on the layer click before the map click
+        // fires; remember when, so the stacked popup does not replace them.
+        var popupOpenedAt = 0;
+        map.on('popupopen', function () { popupOpenedAt = Date.now(); });
+
+        map.on('click', function (e) {
+            if (sideViewMode) { onSideViewClick(e); return; }
+            if (!map.hasLayer(airspaceLayer)) return;
+            if (Date.now() - popupOpenedAt < 100) return; // task popup wins
+            var hits = findAirspacesAtPoint(e.latlng);
+            if (!hits.length) return;
+            L.popup({ maxWidth: 320, maxHeight: 340 })
+                .setLatLng(e.latlng)
+                .setContent(generateStackedListHTML(hits))
+                .openOn(map);
+        });
+
+        // ---- Side view: vertical cross-section of a clicked point ----
+
+        var sideViewMode = false;
+        var sideViewMarker = null;
+        var sideviewPanel = document.getElementById('sideview');
+        var ELEVATION_API = 'https://api.open-meteo.com/v1/elevation';
+        var UNLIMITED_DISPLAY_MARGIN = 1.15; // headroom above the highest finite bound
+
+        var sideViewControl = L.control({ position: 'topleft' });
+        sideViewControl.onAdd = function () {
+            var container = L.DomUtil.create('div', 'leaflet-bar');
+            var btn = L.DomUtil.create('a', 'side-view-toggle', container);
+            btn.href = '#';
+            btn.innerHTML = '⛰';
+            btn.title = 'Toggle side view mode (click map to see the vertical airspace profile)';
+            btn.setAttribute('role', 'button');
+            btn.setAttribute('aria-label', 'Toggle side view mode');
+            btn.setAttribute('aria-pressed', 'false');
+            L.DomEvent.on(btn, 'click', function (ev) {
+                L.DomEvent.stop(ev);
+                setSideViewMode(!sideViewMode, btn);
+            });
+            return container;
+        };
+        sideViewControl.addTo(map);
+
+        function setSideViewMode(active, btn) {
+            sideViewMode = active;
+            var toggleBtn = btn || document.querySelector('.side-view-toggle');
+            if (toggleBtn) {
+                toggleBtn.classList.toggle('active', active);
+                toggleBtn.setAttribute('aria-pressed', String(active));
+            }
+            map.getContainer().classList.toggle('side-view-cursor', active);
+            if (!active) closeSideView();
+        }
+
+        function closeSideView() {
+            if (sideviewPanel) sideviewPanel.classList.add('hidden');
+            if (sideViewMarker) {
+                map.removeLayer(sideViewMarker);
+                sideViewMarker = null;
+            }
+        }
+        window.closeAirspaceSideView = closeSideView;
+
+        function fetchGroundElevation(lat, lng) {
+            var url = ELEVATION_API + '?latitude=' + lat.toFixed(5) + '&longitude=' + lng.toFixed(5);
+            return fetch(url)
+                .then(function (r) {
+                    if (!r.ok) throw new Error('Elevation API returned ' + r.status);
+                    return r.json();
+                })
+                .then(function (data) {
+                    if (!data.elevation || !data.elevation.length) throw new Error('No elevation data');
+                    return data.elevation[0];
+                });
+        }
+
+        function onSideViewClick(e) {
+            var latlng = e.latlng;
+            map.closePopup(); // a task-feature popup may have opened on this click
+
+            // The profile needs airspace data; load it (and show the overlay) first
+            if (!airspaceData) {
+                ensureVisible();
+                loadAirspaces(false)
+                    .then(function () { showSideViewAt(latlng); })
+                    .catch(function (err) { console.error('Failed to load airspaces:', err); });
+                return;
+            }
+            showSideViewAt(latlng);
+        }
+
+        function showSideViewAt(latlng) {
+            if (sideViewMarker) map.removeLayer(sideViewMarker);
+            sideViewMarker = L.marker(latlng).addTo(map);
+
+            var hits = findAirspacesAtPoint(latlng);
+            renderSideView(latlng, null, hits, 'Loading ground elevation…');
+
+            fetchGroundElevation(latlng.lat, latlng.lng)
+                .then(function (ground) {
+                    // Ignore stale responses if the user clicked elsewhere meanwhile
+                    if (!sideViewMode || !sideViewMarker || !sideViewMarker.getLatLng().equals(latlng)) return;
+                    renderSideView(latlng, ground, hits, '');
+                })
+                .catch(function (err) {
+                    console.warn('Ground elevation lookup failed:', err);
+                    if (!sideViewMode || !sideViewMarker || !sideViewMarker.getLatLng().equals(latlng)) return;
+                    renderSideView(latlng, null, hits,
+                        'Ground elevation unavailable — AGL bounds shown relative to sea level.');
+                });
+        }
+
+        function formatMeters(m) {
+            return Math.round(m) + ' m';
+        }
+
+        // Human-readable resolved bounds line, e.g. "GND – 2438 m AMSL".
+        // Bounds that cannot be resolved to meters (unlimited or unknown)
+        // fall back to their original text.
+        function describeBounds(p, ground) {
+            var lower = resolveAltitudeMeters(p.lowerMeters, p.lowerRef, ground || 0);
+            var upper = resolveAltitudeMeters(p.upperMeters, p.upperRef, ground || 0);
+            var lowerTxt = lower === null ? escapeHtml(p.lowerBound) : formatMeters(lower) + ' AMSL';
+            var upperTxt = upper === null ? escapeHtml(p.upperBound) : formatMeters(upper) + ' AMSL';
+            return escapeHtml(p.lowerBound || '?') + ' &ndash; ' + escapeHtml(p.upperBound || '?')
+                + ' <span class="sideview-resolved">(&asymp; ' + lowerTxt + ' &ndash; ' + upperTxt + ')</span>';
+        }
+
+        function niceTickStep(range) {
+            var targets = [100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000];
+            var raw = range / 6;
+            for (var i = 0; i < targets.length; i++) {
+                if (targets[i] >= raw) return targets[i];
+            }
+            return targets[targets.length - 1];
+        }
+
+        function renderSideView(latlng, ground, features, note) {
+            if (!sideviewPanel) return;
+            var groundM = (ground === null || ground === undefined) ? null : ground;
+            var g = groundM || 0;
+
+            // Sort ground-up so bar order matches the physical stack,
+            // resolving AGL floors against the known ground elevation
+            function groundSortKey(p) {
+                var v = resolveAltitudeMeters(p.lowerMeters, p.lowerRef, g);
+                return v === null ? 0 : v;
+            }
+            var sorted = features.slice().sort(function (a, b) {
+                return groundSortKey(a.properties) - groundSortKey(b.properties);
+            });
+
+            // Vertical extent of the plot
+            var maxFinite = 0;
+            sorted.forEach(function (f) {
+                var p = f.properties;
+                var lower = resolveAltitudeMeters(p.lowerMeters, p.lowerRef, g);
+                var upper = resolveAltitudeMeters(p.upperMeters, p.upperRef, g);
+                maxFinite = Math.max(maxFinite, lower || 0, upper || 0);
+            });
+            maxFinite = Math.max(maxFinite, g + 1000);
+            var maxAlt = Math.ceil((maxFinite * UNLIMITED_DISPLAY_MARGIN) / 500) * 500;
+
+            // SVG geometry
+            var W = 460, H = 320;
+            var m = { top: 14, right: 12, bottom: 22, left: 58 };
+            var plotW = W - m.left - m.right;
+            var plotH = H - m.top - m.bottom;
+            function y(alt) { return m.top + plotH - (alt / maxAlt) * plotH; }
+
+            var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="sideview-svg" role="img" aria-label="Vertical airspace profile">';
+            svg += '<rect x="' + m.left + '" y="' + m.top + '" width="' + plotW + '" height="' + plotH + '" class="sideview-sky"/>';
+
+            // Y axis ticks + gridlines
+            var step = niceTickStep(maxAlt);
+            for (var alt = 0; alt <= maxAlt; alt += step) {
+                var ty = y(alt);
+                svg += '<line x1="' + m.left + '" y1="' + ty + '" x2="' + (W - m.right) + '" y2="' + ty + '" class="sideview-grid"/>';
+                svg += '<text x="' + (m.left - 6) + '" y="' + (ty + 3.5) + '" class="sideview-tick" text-anchor="end">' + alt + '</text>';
+            }
+            svg += '<text x="12" y="' + (m.top + 2) + '" class="sideview-axis-label">m AMSL</text>';
+
+            // Ground
+            if (groundM !== null) {
+                var gy = y(Math.min(groundM, maxAlt));
+                svg += '<rect x="' + m.left + '" y="' + gy + '" width="' + plotW + '" height="' + (m.top + plotH - gy) + '" class="sideview-ground"/>';
+                svg += '<line x1="' + m.left + '" y1="' + gy + '" x2="' + (W - m.right) + '" y2="' + gy + '" class="sideview-ground-line"/>';
+                svg += '<text x="' + (W - m.right - 4) + '" y="' + (gy - 4) + '" text-anchor="end" class="sideview-ground-label">ground ' + formatMeters(groundM) + '</text>';
+            }
+
+            // Airspace columns
+            var n = sorted.length;
+            var slot = n ? plotW / n : plotW;
+            var barW = Math.min(slot * 0.72, 90);
+
+            sorted.forEach(function (f, i) {
+                var p = f.properties;
+                var color = safeColor(p.color);
+                var lower = resolveAltitudeMeters(p.lowerMeters, p.lowerRef, g) || 0;
+                var upperRaw = resolveAltitudeMeters(p.upperMeters, p.upperRef, g);
+                // Only a true unlimited ceiling extends to the plot top with an ∞
+                // marker; unknown/unparseable uppers get a short dashed band with "?"
+                var unlimited = p.upperRef === 'UNLIMITED';
+                var unknownUpper = !unlimited && upperRaw === null;
+                var upper = unlimited ? maxAlt
+                    : unknownUpper ? Math.min(lower + 0.08 * maxAlt, maxAlt)
+                        : Math.min(upperRaw, maxAlt);
+
+                var x = m.left + slot * i + (slot - barW) / 2;
+                var yTop = y(upper);
+                var yBottom = y(Math.min(lower, maxAlt));
+                var h = Math.max(yBottom - yTop, 2);
+
+                svg += '<g class="sideview-bar">';
+                svg += '<rect x="' + x + '" y="' + yTop + '" width="' + barW + '" height="' + h + '" fill="' + color
+                    + '" fill-opacity="0.45" stroke="' + color + '" stroke-width="1.5"' + (unlimited || unknownUpper ? ' stroke-dasharray="4 3"' : '') + '/>';
+                if (unlimited || unknownUpper) {
+                    svg += '<text x="' + (x + barW / 2) + '" y="' + (yTop + 12) + '" text-anchor="middle" class="sideview-unlimited">' + (unlimited ? '&#8734;' : '?') + '</text>';
+                }
+                // Number badge linking bar to the list below
+                var badgeY = Math.max(yTop + h / 2, yTop + 10);
+                svg += '<circle cx="' + (x + barW / 2) + '" cy="' + badgeY + '" r="9" fill="' + color + '"/>';
+                svg += '<text x="' + (x + barW / 2) + '" y="' + (badgeY + 3.5) + '" text-anchor="middle" class="sideview-badge">' + (i + 1) + '</text>';
+                svg += '<title>' + escapeHtml(p.name || 'Airspace') + ' (Class ' + escapeHtml(p.class || '?') + ')\n'
+                    + escapeHtml(p.lowerBound || '?') + ' – ' + escapeHtml(p.upperBound || '?') + '</title>';
+                svg += '</g>';
+            });
+
+            svg += '<line x1="' + m.left + '" y1="' + m.top + '" x2="' + m.left + '" y2="' + (m.top + plotH) + '" class="sideview-axis"/>';
+            svg += '</svg>';
+
+            // Details list
+            var list;
+            if (n) {
+                list = sorted.map(function (f, i) {
+                    var p = f.properties;
+                    return '<div class="sideview-item" onclick="zoomToAirspaceFeature(' + f._idx + ')" title="Zoom to airspace">'
+                        + '<span class="sideview-item-badge" style="background:' + safeColor(p.color) + '">' + (i + 1) + '</span>'
+                        + '<div class="stacked-text">'
+                        + '<div class="stacked-name">' + escapeHtml(p.name || 'Airspace')
+                        + ' <span class="sideview-class">Class ' + escapeHtml(p.class || '?') + '</span></div>'
+                        + '<div class="stacked-bounds">' + describeBounds(p, groundM) + '</div>'
+                        + '</div></div>';
+                }).join('');
+            } else {
+                list = '<div class="sideview-empty">No airspaces at this point.</div>';
+            }
+
+            var groundTxt = groundM === null
+                ? ''
+                : '<span class="sideview-ground-info">Ground: ' + formatMeters(groundM) + ' AMSL</span>';
+
+            sideviewPanel.innerHTML =
+                '<div class="sideview-header"><div><strong>Side view</strong>'
+                + '<span class="sideview-coords">' + latlng.lat.toFixed(4) + ', ' + latlng.lng.toFixed(4) + '</span>'
+                + groundTxt + '</div>'
+                + '<button class="sideview-close" onclick="closeAirspaceSideView()" title="Close" aria-label="Close side view">&times;</button></div>'
+                + (note ? '<div class="sideview-note">' + escapeHtml(note) + '</div>' : '')
+                + svg
+                + '<div class="sideview-list">' + list + '</div>';
+            sideviewPanel.classList.remove('hidden');
+        }
     }
 
     // Initialize map when page loads
