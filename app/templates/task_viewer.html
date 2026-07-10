@@ -1233,6 +1233,7 @@
             btn.innerHTML = '⛰';
             btn.title = 'Toggle side view mode (click map to see the vertical airspace profile)';
             btn.setAttribute('role', 'button');
+            btn.setAttribute('aria-label', 'Toggle side view mode');
             btn.setAttribute('aria-pressed', 'false');
             L.DomEvent.on(btn, 'click', function (ev) {
                 L.DomEvent.stop(ev);
@@ -1341,9 +1342,14 @@
             var groundM = (ground === null || ground === undefined) ? null : ground;
             var g = groundM || 0;
 
-            // Sort ground-up so bar order matches the physical stack
+            // Sort ground-up so bar order matches the physical stack,
+            // resolving AGL floors against the known ground elevation
+            function groundSortKey(p) {
+                var v = resolveAltitudeMeters(p.lowerMeters, p.lowerRef, g);
+                return v === null ? 0 : v;
+            }
             var sorted = features.slice().sort(function (a, b) {
-                return sortKeyLower(a.properties) - sortKeyLower(b.properties);
+                return groundSortKey(a.properties) - groundSortKey(b.properties);
             });
 
             // Vertical extent of the plot
