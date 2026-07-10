@@ -69,12 +69,14 @@ def altitude_to_numeric(altitude):
         return {"meters": 0.0, "ref": "AGL"}
     elif altitude.type == AltitudeType.FEET_AMSL:
         val = numeric_val()
-        meters = round(feet_to_meters(val), 1) if val is not None else 0.0
-        return {"meters": meters, "ref": "AMSL"}
+        if val is None:
+            return {"meters": None, "ref": "AMSL"}
+        return {"meters": round(feet_to_meters(val), 1), "ref": "AMSL"}
     elif altitude.type == AltitudeType.FEET_AGL:
         val = numeric_val()
-        meters = round(feet_to_meters(val), 1) if val is not None else 0.0
-        return {"meters": meters, "ref": "AGL"}
+        if val is None:
+            return {"meters": None, "ref": "AGL"}
+        return {"meters": round(feet_to_meters(val), 1), "ref": "AGL"}
     elif altitude.type == AltitudeType.FLIGHT_LEVEL:
         val = numeric_val()
         if val is None:

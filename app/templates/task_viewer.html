@@ -1315,12 +1315,14 @@
             return Math.round(m) + ' m';
         }
 
-        // Human-readable resolved bounds line, e.g. "GND – 2438 m AMSL"
+        // Human-readable resolved bounds line, e.g. "GND – 2438 m AMSL".
+        // Bounds that cannot be resolved to meters (unlimited or unknown)
+        // fall back to their original text.
         function describeBounds(p, ground) {
             var lower = resolveAltitudeMeters(p.lowerMeters, p.lowerRef, ground || 0);
             var upper = resolveAltitudeMeters(p.upperMeters, p.upperRef, ground || 0);
             var lowerTxt = lower === null ? escapeHtml(p.lowerBound) : formatMeters(lower) + ' AMSL';
-            var upperTxt = upper === null ? 'Unlimited' : formatMeters(upper) + ' AMSL';
+            var upperTxt = upper === null ? escapeHtml(p.upperBound) : formatMeters(upper) + ' AMSL';
             return escapeHtml(p.lowerBound || '?') + ' &ndash; ' + escapeHtml(p.upperBound || '?')
                 + ' <span class="sideview-resolved">(&asymp; ' + lowerTxt + ' &ndash; ' + upperTxt + ')</span>';
         }
@@ -1392,8 +1394,13 @@
                 var color = safeColor(p.color);
                 var lower = resolveAltitudeMeters(p.lowerMeters, p.lowerRef, g) || 0;
                 var upperRaw = resolveAltitudeMeters(p.upperMeters, p.upperRef, g);
-                var unlimited = upperRaw === null;
-                var upper = unlimited ? maxAlt : Math.min(upperRaw, maxAlt);
+                // Only a true unlimited ceiling extends to the plot top with an ∞
+                // marker; unknown/unparseable uppers get a short dashed band with "?"
+                var unlimited = p.upperRef === 'UNLIMITED';
+                var unknownUpper = !unlimited && upperRaw === null;
+                var upper = unlimited ? maxAlt
+                    : unknownUpper ? Math.min(lower + 0.08 * maxAlt, maxAlt)
+                        : Math.min(upperRaw, maxAlt);
 
                 var x = m.left + slot * i + (slot - barW) / 2;
                 var yTop = y(upper);
@@ -1402,9 +1409,9 @@
 
                 svg += '<g class="sideview-bar">';
                 svg += '<rect x="' + x + '" y="' + yTop + '" width="' + barW + '" height="' + h + '" fill="' + color
-                    + '" fill-opacity="0.45" stroke="' + color + '" stroke-width="1.5"' + (unlimited ? ' stroke-dasharray="4 3"' : '') + '/>';
-                if (unlimited) {
-                    svg += '<text x="' + (x + barW / 2) + '" y="' + (yTop + 12) + '" text-anchor="middle" class="sideview-unlimited">&#8734;</text>';
+                    + '" fill-opacity="0.45" stroke="' + color + '" stroke-width="1.5"' + (unlimited || unknownUpper ? ' stroke-dasharray="4 3"' : '') + '/>';
+                if (unlimited || unknownUpper) {
+                    svg += '<text x="' + (x + barW / 2) + '" y="' + (yTop + 12) + '" text-anchor="middle" class="sideview-unlimited">' + (unlimited ? '&#8734;' : '?') + '</text>';
                 }
                 // Number badge linking bar to the list below
                 var badgeY = Math.max(yTop + h / 2, yTop + 10);
