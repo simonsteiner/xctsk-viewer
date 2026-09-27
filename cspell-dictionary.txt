@@ -37,3 +37,11 @@ zxingcpp
 conftest
 docstrings
 toggleable
+ADIZ
+colours
+FFVL
+FFVP
+NOFIR
+NOTAM
+NOTAMREF
+RTBA

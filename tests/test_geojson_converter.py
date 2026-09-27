@@ -80,3 +80,17 @@ def test_feature_properties_include_colour_and_bounds():
     assert props["lowerBound"] == "GND"
     assert props["upperBound"] == "1524 m AMSL"
     assert props["color"].startswith("#")
+
+
+def test_airspace_without_name():
+    airspace = Airspace(
+        name=None,
+        class_="UNC",
+        type_="R",
+        geom=_polygon([(46.9, 8.4), (46.95, 8.5), (46.8, 8.45)]),
+    )
+    props = convert_airspace_to_geojson([airspace])["features"][0]["properties"]
+    assert props["name"] is None
+    assert props["class"] == "Restricted"
+    assert props["color"] == "#ffc107"
+    assert props["description"] == "Unnamed airspace (Restricted)"
