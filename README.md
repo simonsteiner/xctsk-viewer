@@ -26,7 +26,7 @@ develop against the unreleased version from GitHub instead, install it on top of
 synced environment:
 
 ```bash
-uv pip install --reinstall "pyxctsk @ git+https://github.com/simonsteiner/pyxctsk"
+uv pip install --reinstall "pyxctsk[qr] @ git+https://github.com/simonsteiner/pyxctsk"
 ```
 
 (Re-running `uv sync` restores the pinned PyPI release.)
