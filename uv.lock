@@ -1005,7 +1005,7 @@ wheels = [
 
 [[package]]
 name = "pyxctsk"
-version = "0.6.0"
+version = "0.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -1013,9 +1013,9 @@ dependencies = [
     { name = "scipy" },
     { name = "simplekml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f5/f9/3ae1517fb1fd684b801df4c5e3488e4a3bdba614820f31af75b4b982d4eb/pyxctsk-0.6.0.tar.gz", hash = "sha256:c166137211bb8c112cda95841e91950900003e8c3d561e6932b564499cb65ad3", size = 1514965, upload-time = "2026-09-27T11:27:40.31Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7b/ea/fab448e23fa6f8e80115760906cafd8325eb46b2271d4a64e715325a7ce6/pyxctsk-0.6.1.tar.gz", hash = "sha256:06d0fb1cbe44e9609362ac257cf8cbd975a1d5ad79e212781fef0e2a3a066434", size = 1515490, upload-time = "2026-09-27T15:15:57.267Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/9a/22e27faf03927ae5672c006c76ff20c1fa2016acedeec5eac3ea4369bd47/pyxctsk-0.6.0-py3-none-any.whl", hash = "sha256:f1d7117f9b363ea7e3aa58ee610975a1e34346aead0958a84576b52af7b75d62", size = 121394, upload-time = "2026-09-27T11:27:39.227Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/52/0dba565c99a403d756552a9f48efb1c09d1594ed06e07c8b52cf53f54deb/pyxctsk-0.6.1-py3-none-any.whl", hash = "sha256:7e1fcb013119987c553578d81f9c6ec68c57eb835b7b9ca14027dec51610446c", size = 121487, upload-time = "2026-09-27T15:15:56.028Z" },
 ]
 
 [package.optional-dependencies]
@@ -1252,7 +1252,7 @@ requires-dist = [
     { name = "gunicorn", specifier = ">=26.2.0" },
     { name = "openair-rs-py", specifier = ">=0.1.4" },
     { name = "pillow", specifier = ">=12.3.0" },
-    { name = "pyxctsk", extras = ["qr"], specifier = ">=0.6" },
+    { name = "pyxctsk", extras = ["qr"], specifier = ">=0.6.1" },
     { name = "qrcode", extras = ["pil"], specifier = ">=8.2" },
     { name = "requests", specifier = ">=2.34.2" },
     { name = "umami-analytics", specifier = ">=1.0.0" },
