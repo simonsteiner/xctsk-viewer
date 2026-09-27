@@ -163,7 +163,7 @@ class XCTSKService:
         return None
 
     def generate_qr_code_string(self, task) -> Optional[str]:
-        """Generate a QR code string for the task in XCTSK format using pyxctsk's QRCodeTask.
+        """Generate the task's XCTSK: QR code string via pyxctsk's `Task.to_qr_code_task()`.
 
         Args:
             task: The task object to generate QR code for
@@ -181,7 +181,7 @@ class XCTSKService:
             return None
 
     def generate_qr_code_base64(self, qr_string) -> Optional[str]:
-        """Generate a QR code for the task in XCTSK format using pyxctsk's QRCodeTask.
+        """Render an XCTSK: QR code string as a base64-encoded PNG using the `qrcode` library.
 
         Args:
             qr_string: The QR code string to generate a base64 image for
