@@ -2,7 +2,66 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
+
+from openair.types import Airspace as RawAirspace
+
+# openair-rs-py returns the raw OpenAir ``AC`` token ("R", "Q", "GP", "FFVL", ...)
+# since 0.2.0; 0.1.x returned these names instead. The map's colours, legend and
+# stats are keyed by them, so raw tokens are mapped back here. Tokens not listed
+# (new or non-standard ones) are shown as they are.
+LEGACY_CLASS_NAMES: Dict[str, str] = {
+    "OTHER": "Other",
+    "P": "Prohibited",
+    "R": "Restricted",
+    "Q": "Danger",
+    "GP": "GliderProhibited",
+    "W": "WaveWindow",
+    "RMZ": "RadioMandatoryZone",
+    "TMZ": "TransponderMandatoryZone",
+    "NOTAM": "Notam",
+    "NOTAM ref": "NotamRef",
+    "NOTAMREF": "NotamRef",
+    "ZSM": "Zsm",
+    "FFVL": "Ffvl",
+    "FFVP": "Ffvp",
+    "SIV": "Siv",
+    "RAS": "Ras",
+    "ADIZ": "Adiz",
+    "AMA": "Ama",
+    "PART": "Part",
+    "FIR": "Fir",
+    "UIR": "Uir",
+    "OCA": "Oca",
+    "POLITICAL": "Political",
+    "NO-FIR": "NoFir",
+    "NOFIR": "NoFir",
+}
+
+# OpenAir v2 files put the kind of airspace in ``AY`` and use ``AC UNC``.
+UNCLASSIFIED = "UNC"
+NO_TYPE = "NONE"
+
+
+def display_class(ac: str, ay: Optional[str] = None) -> str:
+    """Return the class name the map shows for an airspace.
+
+    Legacy ``AC`` tokens map to the names openair-rs-py 0.1.x used (``"R"`` ->
+    ``"Restricted"``). An OpenAir v2 ``AC UNC`` airspace is shown by its ``AY``
+    type instead, mapped the same way (``AC UNC`` + ``AY R`` -> ``"Restricted"``);
+    without a type it stays ``"UNC"``. Anything else passes through unchanged.
+
+    Args:
+        ac: The raw ``AC`` token.
+        ay: The raw ``AY`` token, if the airspace has one.
+
+    Returns:
+        str: The class name used for colours, legend and stats.
+    """
+    token = ac
+    if ac == UNCLASSIFIED and ay and ay != NO_TYPE:
+        token = ay
+    return LEGACY_CLASS_NAMES.get(token, token)
 
 
 class AltitudeType(Enum):
@@ -182,18 +241,20 @@ class Airspace:
     """Represents an airspace with name, class, bounds, and geometry.
 
     Attributes:
-        name (str): The name of the airspace.
-        class_ (str): The airspace class (e.g., 'C', 'D').
+        name (Optional[str]): The name of the airspace; None if it has no ``AN``.
+        class_ (str): The raw ``AC`` token (e.g., 'C', 'R', 'UNC').
         lower_bound (Optional[Altitude]): The lower altitude bound.
         upper_bound (Optional[Altitude]): The upper altitude bound.
         geom (Optional[AirspaceGeometry]): The geometry of the airspace.
+        type_ (Optional[str]): The raw ``AY`` token, if any (e.g., 'R', 'TMA').
     """
 
-    name: str = ""
+    name: Optional[str] = None
     class_: str = ""  # Using class_ to avoid Python keyword conflict
     lower_bound: Optional[Altitude] = None
     upper_bound: Optional[Altitude] = None
     geom: Optional[AirspaceGeometry] = None
+    type_: Optional[str] = None
 
     def __post_init__(self):
         """Initializes lower and upper bounds to defaults if not provided."""
@@ -204,27 +265,19 @@ class Airspace:
 
     @property
     def airspace_class(self) -> str:
-        """Returns the airspace class.
+        """Returns the class name shown on the map; see `display_class`.
 
         Returns:
-            str: The airspace class (e.g., 'C', 'D').
+            str: The display class (e.g., 'C', 'Restricted').
         """
-        return self.class_
-
-    def set_airspace_class(self, value: str):
-        """Sets the airspace class.
-
-        Args:
-            value (str): The airspace class to set (e.g., 'C', 'D').
-        """
-        self.class_ = value
+        return display_class(self.class_, self.type_)
 
 
-def convert_raw_airspace(raw_data: Dict[str, Any]) -> Airspace:
+def convert_raw_airspace(raw_data: RawAirspace) -> Airspace:
     """Converts a raw dictionary to an Airspace object.
 
     Args:
-        raw_data (Dict[str, Any]): The raw airspace data as a dictionary.
+        raw_data (RawAirspace): An airspace dict as returned by openair-rs-py.
 
     Returns:
         Airspace: The constructed Airspace object.
@@ -288,9 +341,10 @@ def convert_raw_airspace(raw_data: Dict[str, Any]) -> Airspace:
             )
 
     return Airspace(
-        name=raw_data.get("name", ""),
+        name=raw_data.get("name"),
         class_=raw_data.get("class", ""),
         lower_bound=parse_altitude(raw_data.get("lowerBound", {})),
         upper_bound=parse_altitude(raw_data.get("upperBound", {})),
         geom=parse_geometry(raw_data.get("geom", {})),
+        type_=raw_data.get("type"),
     )

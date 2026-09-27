@@ -1,10 +1,13 @@
 """Tests for the airspace API routes."""
 
 import io
+from pathlib import Path
 
 import requests
 
 import app.routes.airspace as airspace_routes
+
+FIXTURES = Path(__file__).parent / "fixtures"
 
 
 def test_get_airspaces_returns_feature_collection(client):
@@ -37,6 +40,40 @@ def test_upload_custom_airspace(client, sample_airspace_bytes):
     assert client.get("/api/airspaces/stats").get_json()["filename"] == "sample.txt"
 
 
+def test_upload_openair_v2_tokens(client):
+    # raw AC/AY tokens, a nameless airspace, an unknown class and a malformed
+    # altitude all load instead of failing the upload
+    data = {
+        "file": (
+            io.BytesIO((FIXTURES / "openair_v2_tokens.txt").read_bytes()),
+            "v2.txt",
+        )
+    }
+    resp = client.post(
+        "/api/airspaces/upload", data=data, content_type="multipart/form-data"
+    )
+    assert resp.status_code == 200
+    assert resp.get_json()["count"] == 4
+
+    features = client.get("/api/airspaces").get_json()["features"]
+    props = [
+        (p["name"], p["class"], p["color"], p["upperBound"])
+        for p in (f["properties"] for f in features)
+    ]
+    assert props == [
+        ("LEGACY RESTRICTED", "Restricted", "#ffc107", "?(4500.0.5FT)"),
+        ("V2 DANGER", "Danger", "#4caf50", "FL 95"),
+        (None, "D", "#9c27b0", "1524 m AMSL"),
+        ("UNKNOWN CLASS", "XYZ", "#999999", "914 m AMSL"),
+    ]
+    assert client.get("/api/airspaces/stats").get_json()["classes"] == {
+        "Restricted": 1,
+        "Danger": 1,
+        "D": 1,
+        "XYZ": 1,
+    }
+
+
 def test_upload_rejects_bad_extension(client):
     data = {"file": (io.BytesIO(b"nope"), "bad.pdf")}
     resp = client.post(
@@ -57,7 +94,7 @@ def test_load_comp_ch(client, monkeypatch):
     raw = [
         {
             "name": "CBA C 25 FW",
-            "class": "Restricted",
+            "class": "R",
             "lowerBound": {"type": "FlightLevel", "val": 65},
             "upperBound": {"type": "FlightLevel", "val": 195},
             "geom": {

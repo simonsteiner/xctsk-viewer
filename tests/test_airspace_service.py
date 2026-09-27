@@ -43,3 +43,18 @@ def test_reset_to_default_after_upload(sample_airspace_path):
     airspaces, _ = service.get_cached_data()
     assert len(airspaces) > 2
     assert service.get_current_filename() == "Switzerland.txt"
+
+
+def test_bundled_dataset_classes_match_openair_0_1_names():
+    # openair-rs-py 0.2 returns raw AC tokens; the map still shows the names
+    # (and so colours) 0.1.x produced for the bundled file.
+    stats = AirspaceService().get_airspace_stats()
+    assert stats["classes"] == {
+        "C": 35,
+        "CTR": 2,
+        "D": 73,
+        "Danger": 30,
+        "E": 10,
+        "Prohibited": 162,
+        "Restricted": 22,
+    }

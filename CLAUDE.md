@@ -27,7 +27,7 @@ npx cspell --config cspell.json "app/**"                          # spell-check
 
 `ruff`, `mypy` and `cspell` run on staged files at **pre-commit**; `pytest` runs at **pre-push** (see `lefthook.yml`). Skip with `git commit --no-verify`.
 
-CI (`.github/workflows/ci.yml`) runs all of them on every pull request and push to `main`, on Python 3.12 and 3.13, and builds the Docker image. Merging to `main` deploys (`fly-deploy.yml`).
+CI (`.github/workflows/ci.yml`) runs all of them on every pull request and push to `main`, on Python 3.12 (the `requires-python` floor) and 3.14 (what the Docker image runs), and builds the Docker image. Merging to `main` deploys (`fly-deploy.yml`).
 
 To develop against the unreleased `pyxctsk` from GitHub instead of the pinned PyPI release:
 `uv pip install --reinstall "pyxctsk[qr] @ git+https://github.com/simonsteiner/pyxctsk"` (re-running `uv sync` restores the PyPI version).
@@ -59,7 +59,9 @@ Route handlers call thin wrappers in `utils/route_helpers.py` (`process_xctsk_ta
 - the live xcontest "COMP CH" competition layer via `services/xcontest_airspace.py` (`fetch_comp_ch`, uses the unauthenticated `airspace.xcontest.org/api/v6` JSON API).
 
 Conversion flow for every source:
-`parse_file` (the `openair` / `openair-rs-py` package) or adapted JSON → raw dicts → `convert_raw_airspace` → typed `Airspace` objects (`model/openair_types.py`) → `convert_airspace_to_geojson` (`utils/geojson_converter.py`, expands circles/arcs into polygons). Airspace class colors are centralized in `utils/airspace_colors.py` (single source of truth mirrored in Python/JS/CSS).
+`parse_file` (the `openair` / `openair-rs-py` package) or adapted JSON → raw dicts (`openair.types.Airspace`) → `convert_raw_airspace` → typed `Airspace` objects (`model/openair_types.py`) → `convert_airspace_to_geojson` (`utils/geojson_converter.py`, expands circles/arcs into polygons). Airspace class colors are centralized in `utils/airspace_colors.py` (single source of truth mirrored in Python/JS/CSS).
+
+openair-rs-py (>= 0.2) returns the raw OpenAir `AC`/`AY` tokens (`"R"`, `"Q"`, `"UNC"` + `AY R`, …). `display_class()` in `model/openair_types.py` maps them to the class names colours, legend and stats are keyed by (`"Restricted"`, `"Danger"`, … — the names openair-rs-py 0.1.x returned); unmapped tokens pass through and get the default colour. Don't use openair's `normalize_legacy_classes=True`: it rejects a whole file when a legacy `AC` disagrees with its `AY`, which the French files do (`AC R` + `AY RTBA`). The xcontest adapter emits the same raw shape (its `airclass` is the `AC` token), so both sources share one mapping.
 
 ### Frontend
 

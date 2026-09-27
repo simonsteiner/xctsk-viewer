@@ -1,6 +1,9 @@
 """GeoJSON conversion utilities for airspace data in the xctsk-viewer app."""
 
 import math
+from typing import cast
+
+from openair.types import Airspace as RawAirspace
 
 from app.model.openair_types import (
     Arc,
@@ -51,7 +54,7 @@ def convert_airspace_to_geojson(airspaces, verbose=False):
                     )
                 from app.model.openair_types import convert_raw_airspace
 
-                airspace = convert_raw_airspace(airspace_data)
+                airspace = convert_raw_airspace(cast(RawAirspace, airspace_data))
             else:
                 if verbose:
                     print(
@@ -101,7 +104,7 @@ def _create_geojson_feature(airspace, verbose=False):
             "class": airspace_class,
             "lowerBound": lower_bound,
             "upperBound": upper_bound,
-            "description": f"{name} ({airspace_class})",
+            "description": f"{name or 'Unnamed airspace'} ({airspace_class})",
             "color": get_airspace_color(airspace_class),
         },
         "geometry": None,

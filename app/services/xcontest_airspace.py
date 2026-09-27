@@ -3,21 +3,22 @@
 The site's OpenAir *export* endpoint requires a logged-in account, but the
 public ``/api/v6`` API (used by the map itself) serves the same airspace data
 as JSON without authentication. This module resolves the "COMP CH" channel to
-its current file(s) and adapts the JSON into the raw-dict shape consumed by
+its current file(s) and adapts the JSON into the airspace-dict shape openair-rs-py
+returns (``openair.types.Airspace``), consumed by
 :func:`app.model.openair_types.convert_raw_airspace`, so the data flows through
-the same pipeline as an uploaded OpenAir file.
+the same pipeline as an uploaded OpenAir file. xcontest's ``airclass`` is the
+OpenAir ``AC`` token, which is what openair-rs-py returns as ``class``.
 """
 
 from typing import Any, Dict, List, Tuple
 
 import requests
+from openair.types import Airspace as RawAirspace
+from openair.types import Altitude as RawAltitude
 
 BASE_URL = "https://airspace.xcontest.org"
 COMP_CH_CHANNEL = "COMP CH"
 REQUEST_TIMEOUT = 15  # seconds
-
-# xcontest airspace class -> our colour-scheme class (others pass through)
-_CLASS_MAP = {"R": "Restricted", "P": "Prohibited"}
 
 
 def _get_json(path: str) -> Any:
@@ -41,37 +42,31 @@ def resolve_comp_ch_files() -> List[Tuple[int, str]]:
     ]
 
 
-def _map_class(airclass: str | None) -> str:
-    """Map an xcontest airspace class to our colour-scheme class."""
-    return _CLASS_MAP.get(airclass or "", airclass or "")
-
-
-def _map_altitude(limit: Dict[str, Any] | None) -> Dict[str, Any]:
+def _map_altitude(limit: Dict[str, Any] | None) -> RawAltitude:
     """Map an xcontest ``{hfeet, htype}`` limit to a raw altitude dict."""
     if not limit:
         return {"type": "Gnd"}
     htype = (limit.get("htype") or "").upper()
     hfeet = limit.get("hfeet")
-    if htype == "FL":
-        return {
-            "type": "FlightLevel",
-            "val": int(round(hfeet / 100)) if hfeet is not None else None,
-        }
-    if htype == "AGL":
-        return {"type": "FeetAgl", "val": hfeet}
-    if htype in ("AMSL", "AGL/AMSL"):
-        return {"type": "FeetAmsl", "val": hfeet}
     if htype in ("GND", "") and hfeet in (0, None):
         return {"type": "Gnd"}
+    if hfeet is None:
+        # openair-rs-py's shape for an altitude it cannot interpret
+        return {"type": "Other", "val": htype}
+    if htype == "FL":
+        return {"type": "FlightLevel", "val": int(round(hfeet / 100))}
+    if htype == "AGL":
+        return {"type": "FeetAgl", "val": hfeet}
     return {"type": "FeetAmsl", "val": hfeet}
 
 
-def _adapt_airspace(airspace: Dict[str, Any]) -> Dict[str, Any]:
-    """Adapt one xcontest airspace dict to the openair-rs-py raw-dict shape."""
+def _adapt_airspace(airspace: Dict[str, Any]) -> RawAirspace:
+    """Adapt one xcontest airspace dict to the openair-rs-py airspace shape."""
     polygon = airspace.get("polygon") or []
     return {
-        "name": airspace.get("name", ""),
-        "class": _map_class(airspace.get("airclass")),
+        "name": airspace.get("name") or None,
+        # an airspace without a class is unclassified (OpenAir ``AC UNC``)
+        "class": airspace.get("airclass") or "UNC",
         "lowerBound": _map_altitude(airspace.get("lowerLimit")),
         "upperBound": _map_altitude(airspace.get("upperLimit")),
         "geom": {
@@ -85,7 +80,7 @@ def _adapt_airspace(airspace: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def fetch_comp_ch() -> Tuple[List[Dict[str, Any]], str]:
+def fetch_comp_ch() -> Tuple[List[RawAirspace], str]:
     """Fetch the current COMP CH airspaces from xcontest.
 
     Returns:
@@ -101,7 +96,7 @@ def fetch_comp_ch() -> Tuple[List[Dict[str, Any]], str]:
     if not files:
         raise ValueError("No files available in the COMP CH channel.")
 
-    raw_airspaces: List[Dict[str, Any]] = []
+    raw_airspaces: List[RawAirspace] = []
     names: List[str] = []
     for oaid, name in files:
         data = _get_json(f"/api/v6/data/{oaid}")

@@ -15,13 +15,6 @@ def comp_ch_data():
     return json.loads((FIXTURES / "xcontest_comp_ch.json").read_text())
 
 
-def test_map_class():
-    assert xc._map_class("R") == "Restricted"
-    assert xc._map_class("P") == "Prohibited"
-    assert xc._map_class("D") == "D"  # unmapped classes pass through
-    assert xc._map_class(None) == ""
-
-
 def test_map_altitude():
     assert xc._map_altitude({"hfeet": 6500, "htype": "FL"}) == {
         "type": "FlightLevel",
@@ -37,16 +30,46 @@ def test_map_altitude():
     }
     assert xc._map_altitude({"hfeet": 0, "htype": "GND"}) == {"type": "Gnd"}
     assert xc._map_altitude(None) == {"type": "Gnd"}
+    # a limit without a height is an altitude openair-rs-py could not read
+    assert xc._map_altitude({"hfeet": None, "htype": "FL"}) == {
+        "type": "Other",
+        "val": "FL",
+    }
 
 
 def test_adapt_airspace_shape(comp_ch_data):
     raw = xc._adapt_airspace(comp_ch_data["airspaces"][0])
     assert raw["name"] == "CBA C 25 FW"
-    assert raw["class"] == "Restricted"
+    # xcontest's airclass is the raw AC token, as openair-rs-py returns it
+    assert raw["class"] == "R"
+    assert "type" not in raw
     assert raw["lowerBound"] == {"type": "FlightLevel", "val": 65}
     assert raw["geom"]["type"] == "Polygon"
     # [lat, lng] pairs become {type, lat, lng} point segments
     assert raw["geom"]["segments"][0] == {"type": "Point", "lat": 47.74, "lng": 5.60}
+
+
+def test_adapt_airspace_without_name_or_class():
+    raw = xc._adapt_airspace({"polygon": [[46.9, 8.4]]})
+    assert raw["name"] is None
+    assert raw["class"] == "UNC"
+
+
+def test_adapted_airspaces_get_the_same_colours_as_parsed_ones(comp_ch_data):
+    from app.model.openair_types import convert_raw_airspace
+    from app.utils.geojson_converter import convert_airspace_to_geojson
+
+    airspaces = [
+        convert_raw_airspace(xc._adapt_airspace(a)) for a in comp_ch_data["airspaces"]
+    ]
+    props = [
+        f["properties"] for f in convert_airspace_to_geojson(airspaces)["features"]
+    ]
+    assert [(p["class"], p["color"]) for p in props] == [
+        ("Restricted", "#ffc107"),
+        ("Prohibited", "#ff5722"),
+        ("D", "#9c27b0"),
+    ]
 
 
 def test_fetch_comp_ch_uses_channel_and_data(monkeypatch, comp_ch_data):
