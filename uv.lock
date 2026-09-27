@@ -1248,22 +1248,22 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "flask", specifier = ">=3.1.1" },
-    { name = "gunicorn", specifier = ">=23.0.0" },
+    { name = "flask", specifier = ">=3.1.3" },
+    { name = "gunicorn", specifier = ">=26.2.0" },
     { name = "openair-rs-py", specifier = ">=0.1.4" },
-    { name = "pillow", specifier = ">=11.3.0" },
+    { name = "pillow", specifier = ">=12.3.0" },
     { name = "pyxctsk", extras = ["qr"], specifier = ">=0.6" },
-    { name = "qrcode", extras = ["pil"], specifier = ">=8.2.0" },
-    { name = "requests", specifier = ">=2.32.4" },
-    { name = "umami-analytics", specifier = ">=0.2.20" },
+    { name = "qrcode", extras = ["pil"], specifier = ">=8.2" },
+    { name = "requests", specifier = ">=2.34.2" },
+    { name = "umami-analytics", specifier = ">=1.0.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "lefthook", specifier = ">=1.12.2" },
-    { name = "mypy", specifier = ">=1.16.1" },
-    { name = "pytest", specifier = ">=8.4.1" },
-    { name = "ruff", specifier = ">=0.12.2" },
+    { name = "lefthook", specifier = ">=2.1.14" },
+    { name = "mypy", specifier = ">=2.3.1" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "ruff", specifier = ">=0.16.9" },
 ]
 
 [[package]]
