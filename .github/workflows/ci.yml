@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         # The requires-python floor, and what the Docker image runs.
-        python-version: ['3.12', '3.13']
+        python-version: ['3.12', '3.14']
     steps:
       - uses: actions/checkout@v7
 
