@@ -27,6 +27,8 @@ npx cspell --config cspell.json "app/**"                          # spell-check
 
 `ruff`, `mypy` and `cspell` run on staged files at **pre-commit**; `pytest` runs at **pre-push** (see `lefthook.yml`). Skip with `git commit --no-verify`.
 
+CI (`.github/workflows/ci.yml`) runs all of them on every pull request and push to `main`, on Python 3.12 and 3.13, and builds the Docker image. Merging to `main` deploys (`fly-deploy.yml`).
+
 To develop against the unreleased `pyxctsk` from GitHub instead of the pinned PyPI release:
 `uv pip install --reinstall "pyxctsk[qr] @ git+https://github.com/simonsteiner/pyxctsk"` (re-running `uv sync` restores the PyPI version).
 
