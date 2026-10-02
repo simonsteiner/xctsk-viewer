@@ -8,7 +8,11 @@ from app.model.openair_types import (
     Point,
     PolygonGeometry,
 )
-from app.utils.geojson_converter import altitude_to_text, convert_airspace_to_geojson
+from app.utils.geojson_converter import (
+    altitude_to_numeric,
+    altitude_to_text,
+    convert_airspace_to_geojson,
+)
 
 
 def _polygon(points):
@@ -19,6 +23,40 @@ def test_altitude_to_text_accepts_objects_and_dicts():
     assert altitude_to_text(Altitude(AltitudeType.GND)) == "GND"
     assert altitude_to_text({"type": "FeetAmsl", "val": 5000}) == "1524 m AMSL"
     assert altitude_to_text({"type": "Bogus"}) == "?(None)"
+
+
+def test_altitude_to_numeric_resolves_meters_and_reference():
+    assert altitude_to_numeric(Altitude(AltitudeType.GND)) == {
+        "meters": 0.0,
+        "ref": "AGL",
+    }
+    assert altitude_to_numeric({"type": "FeetAmsl", "val": 5000}) == {
+        "meters": 1524.0,
+        "ref": "AMSL",
+    }
+    assert altitude_to_numeric({"type": "FeetAgl", "val": 1000}) == {
+        "meters": 304.8,
+        "ref": "AGL",
+    }
+    assert altitude_to_numeric({"type": "FlightLevel", "val": 95}) == {
+        "meters": 2895.6,
+        "ref": "FL",
+    }
+
+
+def test_altitude_to_numeric_keeps_unknown_distinct_from_unlimited():
+    assert altitude_to_numeric(Altitude(AltitudeType.UNLIMITED)) == {
+        "meters": None,
+        "ref": "UNLIMITED",
+    }
+    # An unparseable value must not collapse to sea or ground level.
+    assert altitude_to_numeric({"type": "FeetAmsl", "val": "abc"}) == {
+        "meters": None,
+        "ref": "AMSL",
+    }
+    assert altitude_to_numeric({"type": "FeetAgl"}) == {"meters": None, "ref": "AGL"}
+    assert altitude_to_numeric({"type": "Bogus"}) == {"meters": None, "ref": "UNKNOWN"}
+    assert altitude_to_numeric("not an altitude") == {"meters": None, "ref": "UNKNOWN"}
 
 
 def test_polygon_becomes_closed_polygon_feature():
