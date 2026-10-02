@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1 \
     UV_PROJECT_ENVIRONMENT=/usr/local
 
 # Install uv (pin the version for reproducible builds)
-COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.12.19 /uv /uvx /bin/
 
 WORKDIR /app
 

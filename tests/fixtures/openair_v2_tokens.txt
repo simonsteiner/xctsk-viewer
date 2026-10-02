@@ -1,0 +1,37 @@
+* OpenAir file exercising the raw AC/AY tokens openair-rs-py >= 0.2 returns.
+
+* Legacy class token: AC R -> "Restricted"
+AC R
+AN LEGACY RESTRICTED
+AF 123.450
+AL GND
+AH 4500.0.5FT
+DP 46:57:13 N 008:27:52 E
+DP 46:57:46 N 008:30:41 E
+DP 46:55:00 N 008:29:00 E
+
+* OpenAir v2: AC UNC with the kind of airspace in AY
+AC UNC
+AY Q
+AN V2 DANGER
+AL GND
+AH FL 95
+DP 46:47:13 N 008:17:52 E
+DP 46:47:46 N 008:20:41 E
+DP 46:45:00 N 008:19:00 E
+
+* No AN record: name is None
+AC D
+AL GND
+AH 5000 ft
+DP 46:37:13 N 008:07:52 E
+DP 46:37:46 N 008:10:41 E
+DP 46:35:00 N 008:09:00 E
+
+* A class token nobody maps
+AC XYZ
+AN UNKNOWN CLASS
+AL GND
+AH 3000 ft
+V X=46:30:00 N 008:00:00 E
+DC 1.0

@@ -45,3 +45,10 @@ xctask
 xctsk
 zxing
 zxingcpp
+ADIZ
+FFVL
+FFVP
+NOFIR
+NOTAM
+NOTAMREF
+RTBA

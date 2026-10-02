@@ -5,10 +5,7 @@ from io import BytesIO
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-
-# Import pyxctsk functions
-from pyxctsk import (  # type: ignore
-    QRCodeTask,
+from pyxctsk import (
     calculate_task_distances,
     generate_task_geojson,
     parse_task,
@@ -102,8 +99,9 @@ class XCTSKService:
             # Parse the task
             task = parse_task(task_data)
 
-            # Calculate distances - this returns all the turnpoint details we need
-            distances = calculate_task_distances(task)
+            # Calculate distances - this returns all the turnpoint details we need.
+            # Kept as the plain dict: it is served as-is by the JSON API.
+            distances = calculate_task_distances(task).as_dict()
 
             # Generate GeoJSON
             geojson = generate_task_geojson(task)
@@ -165,7 +163,7 @@ class XCTSKService:
         return None
 
     def generate_qr_code_string(self, task) -> Optional[str]:
-        """Generate a QR code string for the task in XCTSK format using pyxctsk's QRCodeTask.
+        """Generate the task's XCTSK: QR code string via pyxctsk's `Task.to_qr_code_task()`.
 
         Args:
             task: The task object to generate QR code for
@@ -175,7 +173,7 @@ class XCTSKService:
         """
         try:
             # Use pyxctsk to get the QR code string (XCTSK:...)
-            qr_task = QRCodeTask.from_task(task)
+            qr_task = task.to_qr_code_task()
             qr_string: str = qr_task.to_string()
             return qr_string
         except Exception as e:
@@ -183,7 +181,7 @@ class XCTSKService:
             return None
 
     def generate_qr_code_base64(self, qr_string) -> Optional[str]:
-        """Generate a QR code for the task in XCTSK format using pyxctsk's QRCodeTask.
+        """Render an XCTSK: QR code string as a base64-encoded PNG using the `qrcode` library.
 
         Args:
             qr_string: The QR code string to generate a base64 image for
@@ -235,6 +233,8 @@ class XCTSKService:
 
     def _extract_task_metadata(self, task, distances: Dict) -> Dict[str, Any]:
         """Extract task metadata from task object and distance calculations."""
+        # The goal as flown: an absent goal defaults to CYLINDER.
+        goal = task.effective_goal
         return {
             "task_distance_center": distances.get("center_distance_km", 0) * 1000,
             "task_distance_optimized": distances.get("optimized_distance_km", 0) * 1000,
@@ -257,13 +257,9 @@ class XCTSKService:
             ),
             "sss_type": (task.sss.type.value if task.sss and task.sss.type else None),
             "goal_deadline": self._format_utc_time(
-                task.goal.deadline.to_json_string()
-                if task.goal and task.goal.deadline
-                else None
+                goal.deadline.to_json_string() if goal and goal.deadline else None
             ),
-            "goal_type": (
-                task.goal.type.value if task.goal and task.goal.type else "Unknown"
-            ),
+            "goal_type": (goal.type.value if goal and goal.type else "Unknown"),
         }
 
     def _format_turnpoints_for_display(self, task, distances: Dict) -> List[Dict]:
@@ -273,7 +269,7 @@ class XCTSKService:
         if not task.turnpoints or not distances.get("turnpoints"):
             return turnpoints
 
-        goal_type = getattr(getattr(task, "goal", None), "type", None)
+        goal_type = getattr(task.effective_goal, "type", None)
         goal_type_value = (
             goal_type.value
             if goal_type and hasattr(goal_type, "value")
