@@ -47,6 +47,7 @@ Two independent data pipelines run through the `services/` layer. Keep parsing a
 ### XCTSK task pipeline
 
 `XCTSKService` (`services/xctsk_service.py`) is the single entry point for all task file/network logic:
+
 1. `download_task_data` fetches raw XCTSK JSON from `https://tools.xcontest.org` (session with retry/backoff).
 2. `process_task_data` runs it through the **`pyxctsk`** PyPI package (`parse_task`, `calculate_task_distances`, `generate_task_geojson`, `Task.to_qr_code_task`) and assembles a task-info dict (task object, distances, GeoJSON, formatted turnpoints, metadata, QR code).
 
@@ -55,6 +56,7 @@ Route handlers call thin wrappers in `utils/route_helpers.py` (`process_xctsk_ta
 ### Airspace pipeline
 
 `AirspaceService` (`services/airspace_service.py`) is a **module-global singleton** (`get_airspace_service()`) holding one active airspace dataset, cached as both typed objects and GeoJSON. The active dataset can come from three sources, all converging on the same conversion pipeline:
+
 - bundled default OpenAir file `app/examples/Switzerland.txt`,
 - a user-uploaded OpenAir file (`.txt`/`.air`/`.openair`),
 - the live xcontest "COMP CH" competition layer via `services/xcontest_airspace.py` (`fetch_comp_ch`, uses the unauthenticated `airspace.xcontest.org/api/v6` JSON API).
