@@ -2,5 +2,6 @@
 # extension (rvben.rumdl) all read this file.
 
 [global]
-# The docs keep each paragraph, table row and link on one line, unwrapped.
+# Line length is not enforced: most paragraphs, table rows and links sit on one
+# long line, and the few wrapped ones are wrapped by hand.
 disable = ["MD013"]

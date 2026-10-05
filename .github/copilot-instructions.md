@@ -29,7 +29,7 @@
 
 - **Run locally:** `uv run python run.py` (Flask runs on port 8080).
 - **Install dependencies:** `uv sync` (creates `.venv` automatically).
-- **Lint/format/type-check:** `uv run ruff check --fix .`, `uv run ruff format .`, `uv run mypy ...`, `uv run rumdl check .` (Markdown; run automatically on commit via lefthook).
+- **Lint/format/type-check:** `uv run ruff check --fix .`, `uv run ruff format .`, `uv run mypy ...`, plus `uv run rumdl check .` for Markdown (all run automatically on commit via lefthook).
 - **Deploy:** Use Fly.io with `fly deploy` (see `fly.toml`). Dockerfile provided for container builds.
 - **Testing:** `uv run pytest` runs the pytest suite in `tests/` (run automatically on push via lefthook). Fixtures live in `tests/conftest.py` and `tests/fixtures/`.
 
