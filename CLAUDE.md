@@ -22,10 +22,11 @@ uv run pytest tests/test_airspace_service.py::test_name # single test
 uv run ruff check --fix .            # lint + autofix
 uv run ruff format .                 # format
 uv run mypy --explicit-package-bases --config-file mypy.ini app   # type-check
+uv run rumdl check .                 # lint Markdown (config in .rumdl.toml)
 npx cspell --config cspell.json "app/**"                          # spell-check
 ```
 
-`ruff`, `mypy` and `cspell` run on staged files at **pre-commit**; `pytest` runs at **pre-push** (see `lefthook.yml`). Skip with `git commit --no-verify`.
+`ruff`, `mypy`, `rumdl` and `cspell` run on staged files at **pre-commit**; `pytest` runs at **pre-push** (see `lefthook.yml`). Skip with `git commit --no-verify`.
 
 CI (`.github/workflows/ci.yml`) runs all of them on every pull request and push to `main`, on Python 3.12 (the `requires-python` floor) and 3.14 (what the Docker image runs), and builds the Docker image. Merging to `main` deploys (`fly-deploy.yml`).
 

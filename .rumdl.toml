@@ -1,0 +1,6 @@
+# Ref: https://rumdl.dev/ — the Markdown linter lefthook, CI and the VS Code
+# extension (rvben.rumdl) all read this file.
+
+[global]
+# The docs keep each paragraph, table row and link on one line, unwrapped.
+disable = ["MD013"]

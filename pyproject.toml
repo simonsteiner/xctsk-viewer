@@ -37,6 +37,7 @@ dev = [
     "mypy>=2.4.0",
     "pytest>=9.1.1",
     "ruff>=0.16.10",
+    "rumdl>=0.2.78",
 ]
 
 [project.urls]

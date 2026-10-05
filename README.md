@@ -94,7 +94,7 @@ The application will be available at <http://localhost:8080>.
 
 ## Code Quality & Formatting
 
-To keep the codebase clean and consistent, this project uses [Ruff](https://docs.astral.sh/ruff/) (linting + formatting, replacing flake8/isort/black/pydocstyle), [mypy](https://mypy-lang.org/) (type checking) and [cspell](https://cspell.org/) (spell checking). These run automatically before each commit via [lefthook](https://github.com/evilmartians/lefthook), which also runs the [pytest](https://docs.pytest.org/) suite before each push.
+To keep the codebase clean and consistent, this project uses [Ruff](https://docs.astral.sh/ruff/) (linting + formatting, replacing flake8/isort/black/pydocstyle), [mypy](https://mypy-lang.org/) (type checking), [rumdl](https://rumdl.dev/) (Markdown linting) and [cspell](https://cspell.org/) (spell checking). These run automatically before each commit via [lefthook](https://github.com/evilmartians/lefthook), which also runs the [pytest](https://docs.pytest.org/) suite before each push.
 
 ### Git Hook Setup
 
@@ -104,7 +104,7 @@ Install the hooks once per clone:
 uv run lefthook install
 ```
 
-Every commit then runs Ruff, mypy and cspell on the staged files (see `lefthook.yml`).
+Every commit then runs Ruff, mypy, rumdl and cspell on the staged files (see `lefthook.yml`).
 
 ### Running the tools manually
 
@@ -112,6 +112,7 @@ Every commit then runs Ruff, mypy and cspell on the staged files (see `lefthook.
 uv run ruff check --fix .   # lint and autofix
 uv run ruff format .        # format
 uv run mypy --explicit-package-bases --config-file mypy.ini app
+uv run rumdl check .        # lint Markdown (`rumdl fmt .` fixes)
 npx cspell --config cspell.json "app/**"
 uv run pytest               # run the test suite
 ```
