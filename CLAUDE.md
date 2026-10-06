@@ -22,10 +22,11 @@ uv run pytest tests/test_airspace_service.py::test_name # single test
 uv run ruff check --fix .            # lint + autofix
 uv run ruff format .                 # format
 uv run mypy --explicit-package-bases --config-file mypy.ini app   # type-check
+uv run rumdl check .                 # lint Markdown (config in .rumdl.toml)
 npx cspell --config cspell.json "app/**"                          # spell-check
 ```
 
-`ruff`, `mypy` and `cspell` run on staged files at **pre-commit**; `pytest` runs at **pre-push** (see `lefthook.yml`). Skip with `git commit --no-verify`.
+`ruff`, `mypy`, `rumdl` and `cspell` run on staged files at **pre-commit**; `pytest` runs at **pre-push** (see `lefthook.yml`). Skip with `git commit --no-verify`.
 
 CI (`.github/workflows/ci.yml`) runs all of them on every pull request and push to `main`, on Python 3.12 (the `requires-python` floor) and 3.14 (what the Docker image runs), and builds the Docker image. Merging to `main` deploys (`fly-deploy.yml`).
 
@@ -46,6 +47,7 @@ Two independent data pipelines run through the `services/` layer. Keep parsing a
 ### XCTSK task pipeline
 
 `XCTSKService` (`services/xctsk_service.py`) is the single entry point for all task file/network logic:
+
 1. `download_task_data` fetches raw XCTSK JSON from `https://tools.xcontest.org` (session with retry/backoff).
 2. `process_task_data` runs it through the **`pyxctsk`** PyPI package (`parse_task`, `calculate_task_distances`, `generate_task_geojson`, `Task.to_qr_code_task`) and assembles a task-info dict (task object, distances, GeoJSON, formatted turnpoints, metadata, QR code).
 
@@ -54,6 +56,7 @@ Route handlers call thin wrappers in `utils/route_helpers.py` (`process_xctsk_ta
 ### Airspace pipeline
 
 `AirspaceService` (`services/airspace_service.py`) is a **module-global singleton** (`get_airspace_service()`) holding one active airspace dataset, cached as both typed objects and GeoJSON. The active dataset can come from three sources, all converging on the same conversion pipeline:
+
 - bundled default OpenAir file `app/examples/Switzerland.txt`,
 - a user-uploaded OpenAir file (`.txt`/`.air`/`.openair`),
 - the live xcontest "COMP CH" competition layer via `services/xcontest_airspace.py` (`fetch_comp_ch`, uses the unauthenticated `airspace.xcontest.org/api/v6` JSON API).

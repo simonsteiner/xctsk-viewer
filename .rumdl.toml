@@ -1,0 +1,7 @@
+# Ref: https://rumdl.dev/ — the Markdown linter lefthook, CI and the VS Code
+# extension (rvben.rumdl) all read this file.
+
+[global]
+# Line length is not enforced: most paragraphs, table rows and links sit on one
+# long line, and the few wrapped ones are wrapped by hand.
+disable = ["MD013"]

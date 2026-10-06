@@ -36,6 +36,7 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy --explicit-package-bases --config-file mypy.ini app tests
+      - run: uv run rumdl check .
       - name: cspell
         run: >-
           git ls-files -z '*.py' '*.md' '*.txt' '*.toml' '*.yml' '*.yaml' '*.json' '*.cfg' '*.ini'
