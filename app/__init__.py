@@ -12,8 +12,10 @@ from flask import Flask
 def create_app():
     """Create and configure the Flask app instance."""
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.environ.get(
-        "FLASK_SECRET_KEY", "your-secret-key-change-in-production"
+    # `or`, not a .get() default: an empty FLASK_SECRET_KEY (e.g. the blank
+    # line in .env.example) must fall back too, or flash() raises.
+    app.config["SECRET_KEY"] = (
+        os.environ.get("FLASK_SECRET_KEY") or "your-secret-key-change-in-production"
     )
 
     # File upload configuration
