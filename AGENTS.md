@@ -1,79 +1,77 @@
-# CLAUDE.md
+# XCTSK Viewer
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Overview
-
-Flask web app that visualizes XCTSK files (paragliding competition tasks for XCTrack). Users load a task by its xcontest task code or by uploading a `.xctsk` file, and see turnpoints, distances, task metadata, a QR code, and an interactive Leaflet map. An optional airspace overlay renders OpenAir airspace data on the map.
+A Flask app that shows paragliding competition tasks (XCTSK files) as turnpoint tables, distances, a QR code and a Leaflet map, with an optional OpenAir airspace overlay. Server-rendered Jinja2 pages call blueprints in `app/routes/`, which delegate to `app/services/` for the two pipelines: tasks (fetched from `tools.xcontest.org` or uploaded, processed by the `pyxctsk` package) and airspace (OpenAir files or the xcontest COMP CH layer, converted to GeoJSON). The map JS in `app/templates/task_viewer.html` reads task GeoJSON from the page and the airspace overlay from `/api/airspaces*`.
+Domain terms are in `GLOSSARY.md`; decisions and their trade-offs go in `docs/adr/` (none yet).
 
 ## Commands
 
-Uses [uv](https://docs.astral.sh/uv/) for dependency management; run everything through `uv run`.
-
 ```bash
-uv sync                              # install deps + dev tools, creates .venv
-uv run lefthook install              # install git hooks (once per clone)
-uv run python run.py                 # run dev server on http://localhost:8080
-
-uv run pytest                        # run the full test suite
-uv run pytest tests/test_airspace_service.py            # single file
-uv run pytest tests/test_airspace_service.py::test_name # single test
-
-uv run ruff check --fix .            # lint + autofix
-uv run ruff format .                 # format
-uv run mypy --explicit-package-bases --config-file mypy.ini app   # type-check
-npx cspell --config cspell.json "app/**"                          # spell-check
+uv sync  # install deps and dev tools into .venv
+uv run lefthook install  # install git hooks, once per clone
+uv run python run.py  # dev server on http://localhost:8080
+uv run pytest  # run all tests
+uv run pytest tests/test_airspace_service.py  # run one test file
+uv run pytest tests/test_airspace_service.py::test_name  # run one test
+uv run ruff check --fix .  # lint and autofix
+uv run ruff check app/routes/api.py  # lint one file
+uv run ruff format .  # format
+uv run mypy --explicit-package-bases --config-file mypy.ini app tests  # type-check, as CI runs it
+npx --yes cspell --no-progress --config cspell.json app/routes/api.py  # spell-check files
+uv lock  # refresh uv.lock after editing pyproject.toml
 ```
 
-`ruff`, `mypy` and `cspell` run on staged files at **pre-commit**; `pytest` runs at **pre-push** (see `lefthook.yml`). Skip with `git commit --no-verify`.
-
-CI (`.github/workflows/ci.yml`) runs all of them on every pull request and push to `main`, on Python 3.12 (the `requires-python` floor) and 3.14 (what the Docker image runs), and builds the Docker image. Merging to `main` deploys (`fly-deploy.yml`).
-
-To develop against the unreleased `pyxctsk` from GitHub instead of the pinned PyPI release:
-`uv pip install --reinstall "pyxctsk[qr] @ git+https://github.com/simonsteiner/pyxctsk"` (re-running `uv sync` restores the PyPI version).
-
-## Architecture
-
-Standard Flask app-factory layout. `create_app()` in `app/__init__.py` registers four blueprints, each in `app/routes/`:
-
-- **`main.py`** — HTML pages: task viewer (`/`, `/xctsk/view/<code>`), file upload (`/xctsk/upload`), about.
-- **`api.py`** — JSON/binary task endpoints: task data, QR PNG, KML download.
-- **`static_routes.py`** — favicons, webmanifest, and a proxy for the Umami `stats.js`.
-- **`airspace.py`** — airspace overlay API (`/api/airspaces*`): get, stats, upload, reset, and `comp-ch` fetch.
-
-Two independent data pipelines run through the `services/` layer. Keep parsing and business logic in `services/`/`utils/`, not in route handlers.
-
-### XCTSK task pipeline
-
-`XCTSKService` (`services/xctsk_service.py`) is the single entry point for all task file/network logic:
-1. `download_task_data` fetches raw XCTSK JSON from `https://tools.xcontest.org` (session with retry/backoff).
-2. `process_task_data` runs it through the **`pyxctsk`** PyPI package (`parse_task`, `calculate_task_distances`, `generate_task_geojson`, `Task.to_qr_code_task`) and assembles a task-info dict (task object, distances, GeoJSON, formatted turnpoints, metadata, QR code).
-
-Route handlers call thin wrappers in `utils/route_helpers.py` (`process_xctsk_task`, `process_uploaded_xctsk_file`, `render_task_viewer`, `validate_xctsk_file`) which also emit Umami analytics events. Processed task dicts are cached in a **module-global in-memory `TaskCache`** (`utils/task_cache.py`, thread-safe, 5-min TTL) keyed `task_data_<code>`; the JSON/QR/KML API endpoints read from this cache and fall back to re-fetching. Only `.xctsk` files are accepted for upload.
-
-### Airspace pipeline
-
-`AirspaceService` (`services/airspace_service.py`) is a **module-global singleton** (`get_airspace_service()`) holding one active airspace dataset, cached as both typed objects and GeoJSON. The active dataset can come from three sources, all converging on the same conversion pipeline:
-- bundled default OpenAir file `app/examples/Switzerland.txt`,
-- a user-uploaded OpenAir file (`.txt`/`.air`/`.openair`),
-- the live xcontest "COMP CH" competition layer via `services/xcontest_airspace.py` (`fetch_comp_ch`, uses the unauthenticated `airspace.xcontest.org/api/v6` JSON API).
-
-Conversion flow for every source:
-`parse_file` (the `openair` / `openair-rs-py` package) or adapted JSON → raw dicts (`openair.types.Airspace`) → `convert_raw_airspace` → typed `Airspace` objects (`model/openair_types.py`) → `convert_airspace_to_geojson` (`utils/geojson_converter.py`, expands circles/arcs into polygons). Airspace class colors are centralized in `utils/airspace_colors.py` (single source of truth mirrored in Python/JS/CSS).
-
-openair-rs-py (>= 0.2) returns the raw OpenAir `AC`/`AY` tokens (`"R"`, `"Q"`, `"UNC"` + `AY R`, …). `display_class()` in `model/openair_types.py` maps them to the class names colours, legend and stats are keyed by (`"Restricted"`, `"Danger"`, … — the names openair-rs-py 0.1.x returned); unmapped tokens pass through and get the default colour. Don't use openair's `normalize_legacy_classes=True`: it rejects a whole file when a legacy `AC` disagrees with its `AY`, which the French files do (`AC R` + `AY RTBA`). The xcontest adapter emits the same raw shape (its `airclass` is the `AC` token), so both sources share one mapping.
-
-### Frontend
-
-Server-rendered Jinja2 templates in `app/templates/` (`base.html`, `task_viewer.html`, `about.html`); custom CSS in `app/static/css/style.css`. The map is **Leaflet** (loaded from CDN in the templates, not bundled). `task_viewer.html` contains the bulk of the map JS inline: it renders the task GeoJSON and fetches `/api/airspaces` to draw the toggleable airspace overlay, legend, and upload control.
+Hooks: Ruff, mypy and cspell run on staged files at pre-commit, pytest at pre-push. CI runs all of them on Python 3.12 and 3.14.
 
 ## Conventions
 
-- New routes: add a blueprint under `app/routes/` and register it in `create_app()`.
-- Ruff enforces `E`, `F`, `I` (isort), and `D` (Google-style docstrings); line length is handled by the formatter. Tests are exempt from docstring rules.
-- Add new deps to `pyproject.toml`, then `uv lock` to refresh `uv.lock`. Add unknown-but-correct words to `cspell-dictionary.txt`.
-- `FLASK_SECRET_KEY` must be set in production (the default in `create_app()` is a placeholder); see README for Fly.io deployment.
+### Scope
 
-## Testing notes
+- **Build only what was asked.** Don't add features, fallbacks or config options nobody requested.
 
-`tests/` uses pytest with fixtures in `tests/conftest.py`. The `reset_airspace_singleton` autouse fixture resets the module-global `AirspaceService` around every test — important because the singleton would otherwise leak dataset state between tests. Fixtures/sample OpenAir data live in `tests/fixtures/`.
+### Routes
+
+- **Routes are blueprints.** Add a blueprint under `app/routes/` and register it in `create_app()` in `app/__init__.py`.
+- **Route handlers stay thin.** Parsing and business logic live in `app/services/` and `app/utils/`, never in a route handler.
+
+### Tasks
+
+- **Task fetching and processing live only in `XCTSKService`** (`app/services/xctsk_service.py`). Don't fetch or parse tasks anywhere else.
+- **`pyxctsk` owns the task format.** Parsing, distances, GeoJSON and QR codes come from it; never re-implement them.
+- **Task routes go through `app/utils/route_helpers.py`.** Its wrappers fetch or parse the task, send the Umami analytics events and fill the task cache.
+- **Processed tasks are cached under `task_data_<code>`** in the in-memory `TaskCache` (`app/utils/task_cache.py`, 5-minute TTL). The JSON, QR and KML endpoints in `app/routes/api.py` read from it and re-fetch on a miss.
+
+### Airspace
+
+- **Every airspace source converges on one pipeline.** Raw `openair.types.Airspace` dicts → `convert_raw_airspace` (`app/model/openair_types.py`) → `convert_airspace_to_geojson` (`app/utils/geojson_converter.py`). A new source adapts its data to the raw dict shape, as `app/services/xcontest_airspace.py` does.
+- **Class names come only from `display_class()`** in `app/model/openair_types.py`. It maps raw OpenAir `AC`/`AY` tokens (`"R"`, `"Q"`, `"UNC"` + `AY R`, …) to the names colours, legend and stats are keyed by (`"Restricted"`, `"Danger"`, …); unmapped tokens pass through.
+- **Airspace colours live only in `app/utils/airspace_colors.py`.** They reach the browser as each GeoJSON feature's `color` property; don't hard-code class colours in JS or CSS.
+
+### Frontend
+
+- **Leaflet loads from a CDN** in the templates; nothing is bundled. Custom CSS goes in `app/static/css/style.css`.
+
+### Dependencies and spelling
+
+- **Use `uv`, not `pip`.** Add a dependency to `pyproject.toml`, then run `uv lock`.
+- **Unknown but correct words go in `cspell-dictionary.txt`.**
+
+## Hard constraints
+
+- **Never pass `normalize_legacy_classes=True` to openair.** It rejects a whole file when a legacy `AC` disagrees with its `AY`, which the French files do (`AC R` + `AY RTBA`).
+- **Never commit a real `FLASK_SECRET_KEY`.** It is a Fly.io secret; the default in `create_app()` is a placeholder for local use only.
+
+## Gotchas
+
+- **Merging to `main` deploys to production** (`.github/workflows/fly-deploy.yml`), without waiting for CI.
+- **`AirspaceService` is a module-global singleton** (`get_airspace_service()`) holding one active dataset. The autouse `reset_airspace_singleton` fixture in `tests/conftest.py` resets it around every test.
+- **State lives in process memory.** The task cache and the airspace dataset are per process, which is why production runs one machine.
+- **`uv sync` undoes a git install of `pyxctsk`.** See `docs/setup.md` for developing against the unreleased version.
+- **Only `.xctsk` files are accepted as task uploads; airspace uploads take `.txt`, `.air` and `.openair`.**
+
+## Docs
+
+- `README.md` — what the project is and the quickstart.
+- `docs/setup.md` — local setup, unreleased `pyxctsk`, code-quality tools, Docker; read when the environment misbehaves.
+- `docs/deployment.md` — Fly.io release flow, secrets and scaling; read before touching `fly.toml`, the `Dockerfile` or the deploy workflow.
+- `.env.example` — every env var, annotated.
+- `GLOSSARY.md` — domain terms and the words to avoid.
