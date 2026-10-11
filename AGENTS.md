@@ -16,11 +16,12 @@ uv run ruff check --fix .  # lint and autofix
 uv run ruff check app/routes/api.py  # lint one file
 uv run ruff format .  # format
 uv run mypy --explicit-package-bases --config-file mypy.ini app tests  # type-check, as CI runs it
+uv run rumdl check .  # lint Markdown; `uv run rumdl fmt .` fixes
 npx --yes cspell --no-progress --config cspell.json app/routes/api.py  # spell-check files
 uv lock  # refresh uv.lock after editing pyproject.toml
 ```
 
-Hooks: Ruff, mypy and cspell run on staged files at pre-commit, pytest at pre-push. CI runs all of them on Python 3.12 and 3.14.
+Hooks: Ruff, mypy, rumdl and cspell run on staged files at pre-commit, pytest at pre-push. CI runs all of them on Python 3.12 and 3.14.
 
 ## Conventions
 

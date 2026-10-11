@@ -34,12 +34,13 @@ Re-running `uv sync` restores the pinned PyPI release.
 
 ## Code quality
 
-The project uses [Ruff](https://docs.astral.sh/ruff/) (linting and formatting), [mypy](https://mypy-lang.org/) (type checking), [cspell](https://cspell.org/) (spell checking) and [pytest](https://docs.pytest.org/). [lefthook](https://github.com/evilmartians/lefthook) runs Ruff, mypy and cspell on the staged files before each commit, and pytest before each push (see `lefthook.yml`).
+The project uses [Ruff](https://docs.astral.sh/ruff/) (linting and formatting), [mypy](https://mypy-lang.org/) (type checking), [rumdl](https://rumdl.dev/) (Markdown linting, configured in `.rumdl.toml`), [cspell](https://cspell.org/) (spell checking) and [pytest](https://docs.pytest.org/). [lefthook](https://github.com/evilmartians/lefthook) runs Ruff, mypy, rumdl and cspell on the staged files before each commit, and pytest before each push (see `lefthook.yml`).
 
 ```bash
 uv run ruff check --fix .                                               # lint and autofix
 uv run ruff format .                                                    # format
 uv run mypy --explicit-package-bases --config-file mypy.ini app tests   # type-check
+uv run rumdl check .                                                    # lint Markdown (`rumdl fmt .` fixes)
 git ls-files '*.py' '*.md' '*.txt' '*.toml' '*.yml' '*.json' '*.ini' \
   | xargs npx --yes cspell --no-progress --config cspell.json           # spell-check
 uv run pytest                                                           # run the test suite
