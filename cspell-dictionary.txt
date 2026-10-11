@@ -8,6 +8,7 @@ colouring
 colours
 conftest
 cpus
+delenv
 docstrings
 envrc
 evilmartians
@@ -55,4 +56,3 @@ NOFIR
 NOTAM
 NOTAMREF
 RTBA
-delenv
