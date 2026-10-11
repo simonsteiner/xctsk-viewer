@@ -8,6 +8,7 @@ colouring
 colours
 conftest
 cpus
+delenv
 docstrings
 envrc
 evilmartians
