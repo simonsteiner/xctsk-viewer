@@ -61,3 +61,8 @@ lockfiles
 Podfile
 pubspec
 topojson
+asymp
+flyland
+middot
+ndash
+loadform
