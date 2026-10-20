@@ -43,7 +43,7 @@ function addAirspaceOverlay(map) {
 
     function buildLegendHTML() {
         var html = '<h6>Airspace Classes</h6>';
-        Object.keys(legendItems).sort().forEach(function (cls) {
+        Object.keys(legendItems).sort(function (a, b) { return a.localeCompare(b); }).forEach(function (cls) {
             html += '<div class="legend-item"><div class="legend-color" style="background:'
                 + safeColor(legendItems[cls]) + '"></div><span>Class ' + escapeHtml(cls) + '</span></div>';
         });
