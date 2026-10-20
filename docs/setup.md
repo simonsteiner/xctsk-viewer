@@ -34,7 +34,9 @@ Re-running `uv sync` restores the pinned PyPI release.
 
 ## Code quality
 
-The project uses [Ruff](https://docs.astral.sh/ruff/) (linting and formatting), [mypy](https://mypy-lang.org/) (type checking), [rumdl](https://rumdl.dev/) (Markdown linting, configured in `.rumdl.toml`), [cspell](https://cspell.org/) (spell checking) and [pytest](https://docs.pytest.org/). [lefthook](https://github.com/evilmartians/lefthook) runs Ruff, mypy, rumdl and cspell on the staged files before each commit, and pytest before each push (see `lefthook.yml`).
+The project uses [Ruff](https://docs.astral.sh/ruff/) (linting and formatting), [mypy](https://mypy-lang.org/) (type checking), [rumdl](https://rumdl.dev/) (Markdown linting, configured in `.rumdl.toml`), [cspell](https://cspell.org/) (spell checking) and [pytest](https://docs.pytest.org/). [lefthook](https://github.com/evilmartians/lefthook) runs Ruff, mypy, rumdl, cspell and a per-file token budget on the staged files before each commit, and pytest before each push (see `lefthook.yml`).
+
+The token budget (`scripts/hooks/check-file-tokens.py`) blocks any staged file over 5,000 tokens (bytes / 4), so an agent can read every file whole; on failure it prints how to split the file. Files nobody writes by hand are marked `linguist-generated` or `linguist-vendored` in `.gitattributes` and skipped.
 
 ```bash
 uv run ruff check --fix .                                               # lint and autofix
@@ -46,7 +48,7 @@ git ls-files '*.py' '*.md' '*.txt' '*.toml' '*.yml' '*.json' '*.ini' \
 uv run pytest                                                           # run the test suite
 ```
 
-To skip the hooks, use `git commit --no-verify` or `git push --no-verify`.
+To skip the hooks once, in an emergency, use `LEFTHOOK=0 git commit …` or `LEFTHOOK=0 git push …`.
 
 CI (`.github/workflows/ci.yml`) runs the same checks on every pull request and push to `main`, on Python 3.12 and 3.14, and builds the Docker image.
 

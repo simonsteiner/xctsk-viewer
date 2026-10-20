@@ -56,3 +56,8 @@ NOFIR
 NOTAM
 NOTAMREF
 RTBA
+codegen
+lockfiles
+Podfile
+pubspec
+topojson

@@ -31,6 +31,13 @@ pre-commit:
       glob: "*.{py,md,txt,toml,yml,yaml,json,cfg,ini}"
       run: npx --yes cspell --no-progress --no-must-find-files --config cspell.json {staged_files}
 
+    # Every staged file an agent writes stays under 5,000 tokens (bytes / 4), so
+    # an agent can read it whole. Lockfiles, build output, binaries and generated
+    # files are skipped; mark more with linguist-generated in .gitattributes.
+    # On failure it prints how to split the file.
+    file-tokens:
+      run: python3 scripts/hooks/check-file-tokens.py --max-tokens 5000 {staged_files}
+
 pre-push:
   commands:
     pytest:
