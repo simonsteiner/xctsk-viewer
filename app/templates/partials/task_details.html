@@ -1,0 +1,190 @@
+<div class="row">
+    <div class="col-12 col-lg-7">
+        <h3>{% if task_data.task.task_type == 'W' %}XCTrack route task information{% else %}XCTrack competition task information{% endif %}</h3>
+        <dl class="row">
+            <dt class="col-3">Task code:</dt>
+            <dd class="col-9">{{ task_code }}</dd>
+            {% if task_data.task.name %}
+            <dt class="col-3">Task name:</dt>
+            <dd class="col-9">{{ task_data.task.name }}</dd>
+            {% endif %}
+            {% if task_data.task.task_type %}
+            <dt class="col-3">Task type:</dt>
+            <dd class="col-9">{% if task_data.task.task_type == 'W' %}Waypoints ({{ task_data.metadata.task_type }}){% else %}{{ task_data.metadata.task_type }}{% endif %}</dd>
+            {% endif %}
+            {% if task_data.metadata.sss_type %}
+            <dt class="col-3">Start type:</dt>
+            <dd class="col-9">{{ task_data.metadata.sss_type }}</dd>
+            {% endif %}
+            {% if task_data.metadata.takeoff_open %}
+            <dt class="col-3">Take-off open at:</dt>
+            <dd class="col-9">
+                <span class="utc-time" data-utc="{{ task_data.metadata.takeoff_open }}">{{ task_data.metadata.takeoff_open }}</span>
+            </dd>
+            {% endif %}
+            {% if task_data.metadata.takeoff_close %}
+            <dt class="col-3">Take-off closed at:</dt>
+            <dd class="col-9">
+                <span class="utc-time" data-utc="{{ task_data.metadata.takeoff_close }}">{{ task_data.metadata.takeoff_close }}</span>
+            </dd>
+            {% endif %}
+            {% if task_data.metadata.sss_time %}
+            <dt class="col-3">SSS open:</dt>
+            <dd class="col-9">
+                <span class="utc-time" data-utc="{{ task_data.metadata.sss_time }}">{{ task_data.metadata.sss_time }}</span>
+            </dd>
+            {% endif %}
+            {% if task_data.metadata.goal_deadline %}
+            <dt class="col-3">Task deadline:</dt>
+            <dd class="col-9">
+                <span class="utc-time" data-utc="{{ task_data.metadata.goal_deadline }}">{{ task_data.metadata.goal_deadline }}</span>
+            </dd>
+            {% endif %}
+            {% if not task_data.task.task_type == 'W' %}
+            <dt class="col-3">Earth model:</dt>
+            <dd class="col-9">{{ task_data.metadata.earth_model }}</dd>
+            {% endif %}
+            {% if task_data.metadata.task_distance_center %}
+            <dt class="col-3">Task distance:</dt>
+            <dd class="col-9">
+                {% if task_data.task.task_type == 'W' %}
+                    {{ "%.1f"|format(task_data.metadata.task_distance_center / 1000) }}km
+                {% else %}
+                    {{ "%.1f"|format(task_data.metadata.task_distance_center / 1000) }}km (through centers)
+                {% endif %}
+            </dd>
+            {% endif %}
+            {% if task_data.metadata.task_distance_optimized and task_data.task.task_type != 'W' %}
+            <dt class="col-3"></dt>
+            <dd class="col-9">{{ "%.1f"|format(task_data.metadata.task_distance_optimized / 1000) }}km (optimized)
+            </dd>
+            {% endif %}
+        </dl>
+        <div class="d-grid gap-2 col-6 mx-auto">
+            <a class="btn btn-outline-primary"
+                href="https://tools.xcontest.org/api/xctsk/load/{{ task_code }}"
+                data-umami-event="download_xctsk_from_xcontest"
+                data-umami-event-task-code="task_{{ task_code }}.xctsk"
+                download="task_{{ task_code }}.xctsk"
+                role="button"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Download task from tools.xcontest.org"
+            >
+                <i class="fas fa-download"></i> Download .xctsk
+            </a>
+            <a class="btn btn-outline-primary"
+                href="/api/kml/task_{{ task_code }}.kml"
+                data-umami-event="download_kml"
+                data-umami-event-task-code="task_{{ task_code }}.kml"
+                download="task_{{ task_code }}.kml"
+                role="button"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Download KML for Google Earth or mapping tools"
+            >
+                <i class="fas fa-globe"></i> Download .kml
+            </a>
+            <a class="btn btn-outline-secondary"
+                href="https://tools.xcontest.org/xctsk/load?taskCode={{ task_code }}"
+                data-umami-event="view_task_on_xcontest"
+                data-umami-event-task-code="{{ task_code }}"
+                target="_blank"
+                role="button"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="View task on tools.xcontest.org"
+            ><i class="fas fa-external-link-alt"></i> View on xcontest.org
+            </a>
+        </div>
+    </div>
+    <div class="col-12 col-lg-5 text-center">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Task Actions</h5>
+                {% if task_data and task_data.qr_code %}
+                <hr class="my-3">
+                <div class="text-center">
+                    <h6 class="mb-2">
+                        <i class="fas fa-qrcode"></i> Task QR Code
+                    </h6>
+                    <img src="data:image/png;base64,{{ task_data.qr_code_base64 }}"
+                         class="img-fluid mb-2 qrcode" 
+                         alt="QR Code for {{ task_code }}" loading="lazy">
+                    <div class="small mt-1">
+                        <a href="/api/qrcode_image/qrcode_{{ task_code }}.png"
+                            data-umami-event="download_qr_code"
+                            data-umami-event-task-code="qrcode_{{ task_code }}.png"
+                            download="qrcode_{{ task_code }}.png"
+                            class="link-secondary"
+                        ><i class="fas fa-download"></i> <span>QR Code image</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                {% if is_upload %}
+                <p class="card-text">Uploaded file: <strong>{{ task_code }}</strong></p>
+                <div class="d-grid gap-2">
+                    <span class="text-muted">
+                        <i class="fas fa-info-circle"></i> This task was uploaded from a local file
+                    </span>
+                </div>
+                {% else %}
+                <p class="card-text">Task code: <strong>{{ task_code }}</strong></p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if task_data.turnpoints %}
+<h4 class="mt-4">Turnpoints</h4>
+<div class="table-responsive">
+    <table class="table table-sm table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                {% if not task_data.task.task_type == 'W' %}<th>Description</th>{% endif %}
+                {% if not task_data.task.task_type == 'W' %}<th class="text-end">Radius</th>{% endif %}
+                <th class="text-end">Distance<br>(km)</th>
+                {% if not task_data.task.task_type == 'W' %}<th class="text-end">Optimized<br>(km)</th>{% endif %}
+                {% if not task_data.task.task_type == 'W' %}<th>Type</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for tp in task_data.turnpoints %}
+            <tr{% if tp.table_class %} class="{{ tp.table_class }}" {% endif %}{% if tp.type=='SSS' %}
+                title="Start of speed section" {% elif tp.type=='ESS' %} title="End of speed section" {% endif %}>
+                <th scope="row">{{ tp.index }}</th>
+                <td>{{ tp.name }}</td>
+                {% if not task_data.task.task_type == 'W' %}<td>{{ tp.description }}</td>{% endif %}
+                {% if not task_data.task.task_type == 'W' %}
+                <td class="text-end">
+                    {% if tp.radius < 1000 %}
+                        {{ tp.radius }}m
+                    {% else %}
+                        {% set km = (tp.radius / 1000)|round(3) %}
+                        {{ ("%g" % km) }}km
+                    {% endif %}
+                </td>
+                {% endif %}
+                <td class="text-end">{{ "%.1f"|format(tp.cumulative_distance_center) }}</td>
+                {% if not task_data.task.task_type == 'W' %}<td class="text-end">{{ "%.1f"|format(tp.cumulative_distance_optimized) }}</td>{% endif %}
+                {% if not task_data.task.task_type == 'W' %}<td>{% if tp.type=='Turnpoint' %}{% else %}{{ tp.type }}{% endif %}</td>{% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<hr>
+{% if not is_upload %}
+<div class="alert alert-info" role="alert">
+    Task data is fetched from <a href="https://tools.xcontest.org/xctsk/"
+                                data-umami-event="link-click"
+                                data-umami-event-source="info"
+                                data-umami-event-link="xcontest" target="_blank">tools.xcontest.org</a>.
+    Distances may slightly differ from XCTrack.
+</div>
+{% endif %}
+{% endif %}

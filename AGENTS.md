@@ -1,6 +1,6 @@
 # XCTSK Viewer
 
-A Flask app that shows paragliding competition tasks (XCTSK files) as turnpoint tables, distances, a QR code and a Leaflet map, with an optional OpenAir airspace overlay. Server-rendered Jinja2 pages call blueprints in `app/routes/`, which delegate to `app/services/` for the two pipelines: tasks (fetched from `tools.xcontest.org` or uploaded, processed by the `pyxctsk` package) and airspace (OpenAir files or the xcontest COMP CH layer, converted to GeoJSON). The map JS in `app/templates/task_viewer.html` reads task GeoJSON from the page and the airspace overlay from `/api/airspaces*`.
+A Flask app that shows paragliding competition tasks (XCTSK files) as turnpoint tables, distances, a QR code and a Leaflet map, with an optional OpenAir airspace overlay. Server-rendered Jinja2 pages call blueprints in `app/routes/`, which delegate to `app/services/` for the two pipelines: tasks (fetched from `tools.xcontest.org` or uploaded, processed by the `pyxctsk` package) and airspace (OpenAir files or the xcontest COMP CH layer, converted to GeoJSON). The map JS in `app/static/js/` gets the task GeoJSON from `app/templates/task_viewer.html` and the airspace overlay from `/api/airspaces*`.
 Domain terms are in `GLOSSARY.md`; decisions and their trade-offs go in `docs/adr/` (none yet).
 
 ## Commands
@@ -49,7 +49,8 @@ Hooks: Ruff, mypy, rumdl and cspell run on staged files at pre-commit, pytest at
 
 ### Frontend
 
-- **Leaflet loads from a CDN** in the templates; nothing is bundled. Custom CSS goes in `app/static/css/style.css`.
+- **Leaflet loads from a CDN** in the templates; nothing is bundled. Custom CSS goes in `app/static/css/style.css`; the map page's in `app/static/css/task_viewer.css`, linked after Leaflet's CSS so it overrides it.
+- **The task map's JS lives in `app/static/js/`** as plain scripts the task page loads in order: `airspace_lookup.js` (shared helpers), `airspace_profile.js`, `airspace_sideview.js`, `airspace_overlay.js`, then `task_map.js`, whose `initMap(geojson)` the page calls with the task GeoJSON.
 
 ### Dependencies and spelling
 
