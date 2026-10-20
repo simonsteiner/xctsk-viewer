@@ -21,7 +21,7 @@ npx --yes cspell --no-progress --config cspell.json app/routes/api.py  # spell-c
 uv lock  # refresh uv.lock after editing pyproject.toml
 ```
 
-Hooks: Ruff, mypy, rumdl, cspell and the per-file token budget (`scripts/hooks/check-file-tokens.py`, 5,000 tokens) run on staged files at pre-commit, pytest at pre-push. CI runs all but the token budget on Python 3.12 and 3.14.
+Hooks: Ruff, mypy, rumdl, cspell and the per-file token budget (`check-file-tokens.py` from the `simonsteiner/skills` lefthook remote, 5,000 tokens) run on staged files at pre-commit, pytest at pre-push. CI runs all but the token budget on Python 3.12 and 3.14.
 
 ## Conventions
 

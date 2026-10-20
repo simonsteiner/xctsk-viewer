@@ -68,5 +68,3 @@ known-first-party = ["app"]
 [tool.ruff.lint.per-file-ignores]
 # Tests don't need the full pydocstyle docstring conventions
 "tests/**" = ["D"]
-# Copied from the setup-lefthook skill, whose small helpers carry no docstrings
-"scripts/hooks/**" = ["D103"]

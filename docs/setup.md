@@ -36,7 +36,7 @@ Re-running `uv sync` restores the pinned PyPI release.
 
 The project uses [Ruff](https://docs.astral.sh/ruff/) (linting and formatting), [mypy](https://mypy-lang.org/) (type checking), [rumdl](https://rumdl.dev/) (Markdown linting, configured in `.rumdl.toml`), [cspell](https://cspell.org/) (spell checking) and [pytest](https://docs.pytest.org/). [lefthook](https://github.com/evilmartians/lefthook) runs Ruff, mypy, rumdl, cspell and a per-file token budget on the staged files before each commit, and pytest before each push (see `lefthook.yml`).
 
-The token budget (`scripts/hooks/check-file-tokens.py`) blocks any staged file over 5,000 tokens (bytes / 4), so an agent can read every file whole; on failure it prints how to split the file. Files nobody writes by hand are marked `linguist-generated` or `linguist-vendored` in `.gitattributes` and skipped.
+The token budget (`check-file-tokens.py`, which lefthook fetches from [simonsteiner/skills](https://github.com/simonsteiner/skills) at the tag pinned in `lefthook.yml`; the first commit needs network once) blocks any staged file over 5,000 tokens (bytes / 4), so an agent can read every file whole; on failure it prints how to split the file. Files nobody writes by hand are marked `linguist-generated` or `linguist-vendored` in `.gitattributes` and skipped.
 
 ```bash
 uv run ruff check --fix .                                               # lint and autofix
