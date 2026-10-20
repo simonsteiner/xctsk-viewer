@@ -14,6 +14,10 @@ uv run lefthook install    # install the git hooks
 uv run python run.py       # serve on http://localhost:8080
 ```
 
+## Development
+
+`uv run lefthook install` sets up the git hooks. Before each commit they run Ruff, mypy, rumdl, cspell and a per-file token budget (no file over 5,000 tokens) on the staged files; before each push, pytest. To skip them once, in an emergency: `LEFTHOOK=0 git commit …`. See [docs/setup.md](docs/setup.md#code-quality) for the commands.
+
 ## Docs
 
 - [docs/setup.md](docs/setup.md) — local setup, developing against unreleased `pyxctsk`, code-quality tools, Docker.

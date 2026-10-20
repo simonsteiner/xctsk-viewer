@@ -1,0 +1,3 @@
+# Third-party OpenAir airspace data (flyland.ch export), bundled as the default
+# airspace dataset; downloaded, not written by hand.
+app/examples/** linguist-vendored
