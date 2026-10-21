@@ -5,3 +5,6 @@
 # Line length is not enforced: most paragraphs, table rows and links sit on one
 # long line, and the few wrapped ones are wrapped by hand.
 disable = ["MD013"]
+# lefthook clones its remotes into .git/info/lefthook-remotes/, and rumdl
+# doesn't skip .git on its own.
+exclude = [".git/**"]
